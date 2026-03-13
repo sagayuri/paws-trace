@@ -954,6 +954,21 @@ export default function App() {
 
   useEffect(() => saveData(data), [data]);
 
+  // Geocode lostLocation text → lostLat/lostLng when coordinates are missing
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!data.registered) return;
+    if (data.petData?.lostLat && data.petData?.lostLng) return;
+    if (!data.petData?.lostLocation) return;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address: data.petData.lostLocation, language: 'ja', region: 'JP' }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const loc = results[0].geometry.location;
+        setData(p => ({ ...p, petData: { ...p.petData, lostLat: loc.lat(), lostLng: loc.lng() } }));
+      }
+    });
+  }, [isLoaded, data.registered]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleOnboardingComplete = useCallback((formData) => {
     setData(p => ({ ...p, registered: true, petData: formData }));
   }, []);
