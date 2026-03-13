@@ -76,29 +76,31 @@ const AREA_STATUS_STYLE = {
   '発見':    { bg: '#F59E0B', symbol: '★',  badge: 'bg-amber-100 text-amber-600' },
 };
 
+// 失踪場所ピン — 赤いティアドロップ（大きめ・地図ピン型）
 function mkLostIcon() {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
-    <path d="M18 0C8.059 0 0 8.059 0 18c0 13.5 18 30 18 30s18-16.5 18-30C36 8.059 27.941 0 18 0Z" fill="#EF4444" stroke="white" stroke-width="2"/>
-    <circle cx="18" cy="18" r="9" fill="white"/>
-    <text x="18" y="23" text-anchor="middle" font-size="13" font-weight="900" fill="#EF4444" font-family="system-ui,-apple-system,sans-serif">失</text>
-  </svg>`;
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="58" viewBox="0 0 44 58">'
+    + '<path d="M22 0C9.85 0 0 9.85 0 22c0 16.5 22 36 22 36s22-19.5 22-36C44 9.85 34.15 0 22 0Z" fill="#EF4444" stroke="white" stroke-width="2.5"/>'
+    + '<circle cx="22" cy="22" r="11" fill="white"/>'
+    + '<text x="22" y="27" text-anchor="middle" font-size="14" font-weight="900" fill="#EF4444" font-family="sans-serif">\u5931</text>'
+    + '</svg>';
   return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(36, 48),
-    anchor: new window.google.maps.Point(18, 48),
+    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+    scaledSize: new window.google.maps.Size(44, 58),
+    anchor: new window.google.maps.Point(22, 58),
   };
 }
 
+// 目撃情報ピン — 円形・番号表示。最新＝オレンジ、それ以外＝ブルー（失踪ピンより小さく・形状で差別化）
 function mkSightingIcon(num, isLatest) {
-  const bg = isLatest ? '#f97316' : '#475569';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-    <circle cx="16" cy="16" r="13" fill="${bg}" stroke="white" stroke-width="3"/>
-    <text x="16" y="21" text-anchor="middle" font-size="12" font-weight="900" fill="white" font-family="system-ui,-apple-system,sans-serif">${num}</text>
-  </svg>`;
+  const bg = isLatest ? '#F97316' : '#3B82F6';
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34">'
+    + '<circle cx="17" cy="17" r="14" fill="' + bg + '" stroke="white" stroke-width="3"/>'
+    + '<text x="17" y="22" text-anchor="middle" font-size="13" font-weight="900" fill="white" font-family="sans-serif">' + num + '</text>'
+    + '</svg>';
   return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(32, 32),
-    anchor: new window.google.maps.Point(16, 16),
+    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+    scaledSize: new window.google.maps.Size(34, 34),
+    anchor: new window.google.maps.Point(17, 17),
   };
 }
 
@@ -1115,7 +1117,7 @@ export default function App() {
                     zIndex={999}
                   />
                 )}
-                {isLostInfoOpen && data.petData?.lostLat && (
+                {isLostInfoOpen && data.petData?.lostLat && activeTab === 'map' && (
                   <InfoWindow
                     position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
                     onCloseClick={() => setIsLostInfoOpen(false)}
@@ -1268,7 +1270,7 @@ export default function App() {
                       onClick={() => { setTrackerAreaId(area.id); setTrackerSightingId(null); }}
                     />
                   ))}
-                  {/* 目撃情報ピン（円・日時表示） */}
+                  {/* 目撃情報ピン（ダイヤ型・番号表示：最新=オレンジ、過去=ブルー） */}
                   {sightings.map((s, i) => (
                     <Marker
                       key={s.id}
@@ -1277,6 +1279,28 @@ export default function App() {
                       onClick={() => { setTrackerSightingId(s.id); setTrackerAreaId(null); }}
                     />
                   ))}
+
+                  {/* 失踪地点ピン（赤いティアドロップ・常時表示） */}
+                  {data.petData?.lostLat && data.petData?.lostLng && (
+                    <Marker
+                      position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
+                      icon={mkLostIcon()}
+                      onClick={() => { setIsLostInfoOpen(true); setTrackerAreaId(null); setTrackerSightingId(null); }}
+                      zIndex={999}
+                    />
+                  )}
+                  {isLostInfoOpen && data.petData?.lostLat && activeTab === 'tracker' && (
+                    <InfoWindow
+                      position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
+                      onCloseClick={() => setIsLostInfoOpen(false)}
+                    >
+                      <div style={{ fontFamily: 'system-ui', textAlign: 'left', maxWidth: 180 }}>
+                        <p style={{ fontWeight: 700, fontSize: 13, color: '#EF4444', marginBottom: 4 }}>📍 失踪場所</p>
+                        <p style={{ fontSize: 11, color: '#1C1C1E', lineHeight: 1.4 }}>{data.petData.lostLocation}</p>
+                        {data.petData.lostDate && <p style={{ fontSize: 11, color: '#8E8E93', marginTop: 4 }}>🗓 {data.petData.lostDate}</p>}
+                      </div>
+                    </InfoWindow>
+                  )}
 
                   {/* InfoWindow: エリア */}
                   {trackerAreaId !== null && (() => {
