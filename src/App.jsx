@@ -197,6 +197,110 @@ const FlyerPreview = ({ petData }) => (
   </div>
 );
 
+// ─── Crop Modal ───────────────────────────────────────────────────────────────
+const CropModal = ({ src, onCrop, onCancel }) => {
+  const containerRef = useRef(null);
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const [imgNatural, setImgNatural] = useState(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const dragRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const { width, height } = el.getBoundingClientRect();
+    setContainerSize({ w: width, h: height });
+  }, []);
+
+  const CROP_SIZE = containerSize.w > 0 ? Math.min(containerSize.w, containerSize.h) * 0.85 : 280;
+  const scale = imgNatural && containerSize.w > 0
+    ? Math.max(CROP_SIZE / imgNatural.w, CROP_SIZE / imgNatural.h) : 1;
+  const imgW = imgNatural ? imgNatural.w * scale : CROP_SIZE;
+  const imgH = imgNatural ? imgNatural.h * scale : CROP_SIZE;
+  const maxX = Math.max(0, (imgW - CROP_SIZE) / 2);
+  const maxY = Math.max(0, (imgH - CROP_SIZE) / 2);
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+  const cx = clamp(offset.x, -maxX, maxX);
+  const cy = clamp(offset.y, -maxY, maxY);
+  const imgLeft = (containerSize.w - imgW) / 2 + cx;
+  const imgTop = (containerSize.h - imgH) / 2 + cy;
+  const cropLeft = (containerSize.w - CROP_SIZE) / 2;
+  const cropTop = (containerSize.h - CROP_SIZE) / 2;
+
+  const startDrag = (clientX, clientY) => {
+    dragRef.current = { clientX, clientY, ox: offset.x, oy: offset.y };
+  };
+  const moveDrag = (clientX, clientY) => {
+    if (!dragRef.current) return;
+    setOffset({
+      x: dragRef.current.ox + (clientX - dragRef.current.clientX),
+      y: dragRef.current.oy + (clientY - dragRef.current.clientY),
+    });
+  };
+  const endDrag = () => { dragRef.current = null; };
+
+  const handleCrop = () => {
+    if (!imgNatural) return;
+    const canvas = document.createElement('canvas');
+    const OUT = 800;
+    canvas.width = OUT;
+    canvas.height = OUT;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      const sx = (cropLeft - imgLeft) / scale;
+      const sy = (cropTop - imgTop) / scale;
+      const sw = CROP_SIZE / scale;
+      ctx.drawImage(img, sx, sy, sw, sw, 0, 0, OUT, OUT);
+      onCrop(canvas.toDataURL('image/jpeg', 0.92));
+    };
+    img.src = src;
+  };
+
+  return (
+    <div className="fixed inset-0 z-[300] bg-black flex flex-col select-none">
+      <div className="flex items-center justify-between px-5 pt-12 pb-3 shrink-0">
+        <button onClick={onCancel} className="text-white/70 text-[15px] font-medium">キャンセル</button>
+        <span className="text-white font-semibold text-[15px]">写真を切り取る</span>
+        <button onClick={handleCrop} className="text-[#F97316] font-bold text-[16px]">完了</button>
+      </div>
+      <div
+        ref={containerRef}
+        className="flex-1 relative overflow-hidden"
+        style={{ touchAction: 'none', cursor: 'grab' }}
+        onMouseDown={e => startDrag(e.clientX, e.clientY)}
+        onMouseMove={e => moveDrag(e.clientX, e.clientY)}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchStart={e => startDrag(e.touches[0].clientX, e.touches[0].clientY)}
+        onTouchMove={e => moveDrag(e.touches[0].clientX, e.touches[0].clientY)}
+        onTouchEnd={endDrag}
+      >
+        {containerSize.w > 0 && (
+          <>
+            <img
+              src={src}
+              onLoad={e => setImgNatural({ w: e.target.naturalWidth, h: e.target.naturalHeight })}
+              draggable={false}
+              style={{ position: 'absolute', width: imgW, height: imgH, left: imgLeft, top: imgTop, pointerEvents: 'none', userSelect: 'none' }}
+            />
+            <div style={{
+              position: 'absolute', left: cropLeft, top: cropTop,
+              width: CROP_SIZE, height: CROP_SIZE,
+              boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)',
+              border: '2px solid rgba(255,255,255,0.8)',
+              borderRadius: 12, pointerEvents: 'none',
+            }}/>
+          </>
+        )}
+      </div>
+      <div className="shrink-0 pt-3 pb-8 text-center">
+        <p className="text-white/40 text-[13px]">ドラッグして位置を調整</p>
+      </div>
+    </div>
+  );
+};
+
 // ─── Flyer Edit Modal ─────────────────────────────────────────────────────────
 // ─── Onboarding Screen ───────────────────────────────────────────────────────
 const OnboardingScreen = ({ onComplete, isLoaded }) => {
@@ -207,6 +311,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
   const [locationAddress, setLocationAddress] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
+  const [cropModal, setCropModal] = useState(null);
   const locationMapRef = useRef(null);
   const r0 = useRef(null), r1 = useRef(null), r2 = useRef(null);
   const fileRefs = [r0, r1, r2];
@@ -217,8 +322,14 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => { const imgs = [...form.images]; imgs[i] = reader.result; setForm(f => ({ ...f, images: imgs })); };
+    reader.onloadend = () => setCropModal({ index: i, src: reader.result });
     reader.readAsDataURL(file);
+  };
+  const handleCropDone = (croppedSrc) => {
+    const imgs = [...form.images];
+    imgs[cropModal.index] = croppedSrc;
+    setForm(f => ({ ...f, images: imgs }));
+    setCropModal(null);
   };
 
   const handleLocationMapClick = async (latlng) => {
@@ -382,6 +493,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
 
   // ── Form step ──
   return (
+    <>
     <div className="h-full flex flex-col bg-[#F2F2F7] overflow-hidden">
       <div className="bg-white px-4 pt-12 pb-4 border-b border-[#C6C6C8]/40 flex items-center gap-2 shrink-0">
         <button onClick={() => setStep('landing')} className="text-[#F97316] p-1 -ml-1">
@@ -495,6 +607,8 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
         </button>
       </div>
     </div>
+    {cropModal && <CropModal src={cropModal.src} onCrop={handleCropDone} onCancel={() => setCropModal(null)}/>}
+    </>
   );
 };
 
@@ -503,6 +617,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
   const fileRefs = [r0, r1, r2];
   const animalOptions = ['犬', '猫', '鳥', 'その他'];
   const isOther = !['犬', '猫', '鳥'].includes(petData.type);
+  const [cropModal, setCropModal] = useState(null);
 
   if (!isOpen) return null;
 
@@ -510,8 +625,14 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => { const imgs = [...petData.images]; imgs[i] = reader.result; setPetData({ ...petData, images: imgs }); };
+    reader.onloadend = () => setCropModal({ index: i, src: reader.result });
     reader.readAsDataURL(file);
+  };
+  const handleCropDone = (croppedSrc) => {
+    const imgs = [...petData.images];
+    imgs[cropModal.index] = croppedSrc;
+    setPetData({ ...petData, images: imgs });
+    setCropModal(null);
   };
   const inp = (label, key, col2 = false) => (
     <div className={col2 ? 'col-span-2' : ''}>
@@ -527,6 +648,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
   );
 
   return (
+    <>
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm font-sans">
       <div className="bg-white w-full max-w-xl rounded-3xl shadow-lg flex flex-col max-h-[90vh] overflow-hidden text-left">
         <div className="px-5 pt-3 pb-4 border-b border-[#C6C6C8]/40 flex justify-between items-center bg-white">
@@ -578,6 +700,8 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
         </div>
       </div>
     </div>
+    {cropModal && <CropModal src={cropModal.src} onCrop={handleCropDone} onCancel={() => setCropModal(null)}/>}
+    </>
   );
 };
 
