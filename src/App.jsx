@@ -140,8 +140,8 @@ const LogoIcon = () => (
 const MissingFamilyLogo = () => (
   <div className="flex items-center gap-1"><LogoIcon /><LogoIcon /></div>
 );
-const PawPrint = ({ className }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="#F97316">
+const PawPrint = ({ className, fill = '#F97316', style }) => (
+  <svg viewBox="0 0 24 24" className={className} fill={fill} style={style}>
     <circle cx="12" cy="16" r="4"/><circle cx="7" cy="8" r="2.5"/>
     <circle cx="12" cy="5" r="2.5"/><circle cx="17" cy="8" r="2.5"/>
   </svg>
@@ -319,11 +319,38 @@ const CropModal = ({ src, onCrop, onCancel }) => {
 };
 
 // ─── Flyer Edit Modal ─────────────────────────────────────────────────────────
+// ─── Landing screen paw-print positions ──────────────────────────────────────
+const PAW_POSITIONS = [
+  { l: 10, t:  5, r: -20, s: 30, o: 0.22 },
+  { l: 68, t:  4, r:  18, s: 22, o: 0.18 },
+  { l: 84, t: 16, r:  32, s: 26, o: 0.24 },
+  { l:  5, t: 28, r: -12, s: 20, o: 0.20 },
+  { l: 58, t: 20, r:  10, s: 18, o: 0.16 },
+  { l: 80, t: 40, r:  22, s: 24, o: 0.22 },
+  { l: 14, t: 58, r: -28, s: 28, o: 0.26 },
+  { l: 88, t: 65, r:  14, s: 20, o: 0.20 },
+  { l: 42, t: 80, r:  -6, s: 26, o: 0.24 },
+  { l: 70, t: 86, r:  28, s: 18, o: 0.18 },
+];
+
 // ─── Onboarding Screen ───────────────────────────────────────────────────────
 const OnboardingScreen = ({ onComplete, isLoaded }) => {
   const [step, setStep] = useState('landing'); // 'landing' | 'form' | 'locationMap'
   const [form, setForm] = useState({ ...EMPTY_PET_DATA });
+  const [pawCount, setPawCount] = useState(0);
   const [lostDateRaw, setLostDateRaw] = useState('');
+  useEffect(() => {
+    if (step !== 'landing') return;
+    setPawCount(0);
+    const total = PAW_POSITIONS.length;
+    let i = 0;
+    const iv = setInterval(() => {
+      i++;
+      setPawCount(i);
+      if (i >= total) clearInterval(iv);
+    }, 160);
+    return () => clearInterval(iv);
+  }, [step]);
   const [locationPin, setLocationPin] = useState(null);
   const [locationAddress, setLocationAddress] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
@@ -478,29 +505,67 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
   // ── Landing step ──
   if (step === 'landing') {
     return (
-      <div className="h-full flex flex-col items-center justify-center bg-white px-8 gap-10">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-20 h-20 bg-[#F97316] rounded-3xl flex items-center justify-center shadow-lg shadow-orange-200">
-            <span className="text-4xl select-none">🐾</span>
+      <div
+        className="h-full flex flex-col items-center justify-center relative overflow-hidden px-8"
+        style={{ background: '#F2D3AC' }}
+      >
+        {/* アニメーション足跡（背景装飾） */}
+        {PAW_POSITIONS.map((p, i) => (
+          <PawPrint
+            key={i}
+            fill={i % 2 === 0 ? '#A65A2E' : '#73351F'}
+            style={{
+              position: 'absolute',
+              left: `${p.l}%`,
+              top: `${p.t}%`,
+              width: p.s,
+              height: p.s,
+              transform: `rotate(${p.r}deg)`,
+              opacity: i < pawCount ? p.o : 0,
+              transition: 'opacity 0.4s ease-in-out',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          />
+        ))}
+
+        {/* ロゴ・メインコピー */}
+        <div className="flex flex-col items-center gap-3 z-10">
+          <div
+            className="w-24 h-24 rounded-[2rem] flex items-center justify-center shadow-lg"
+            style={{ background: '#73351F', boxShadow: '0 8px 24px rgba(115,53,31,0.35)' }}
+          >
+            <span className="text-5xl select-none">🐾</span>
           </div>
-          <h1 className="text-3xl font-black text-[#1C1C1E] tracking-tight">PawsTrace</h1>
-          <p className="text-[#8E8E93] text-center text-[15px] leading-relaxed">迷子のペットを、みんなで探す</p>
+          <h1 className="text-3xl font-black tracking-tight" style={{ color: '#73351F' }}>PawsTrace</h1>
+          <p className="text-center text-[15px] leading-relaxed font-medium" style={{ color: '#A65A2E' }}>
+            迷子のペットを、みんなで探す
+          </p>
         </div>
-        <div className="flex flex-col gap-4 w-full max-w-xs">
+
+        {/* 機能カード */}
+        <div className="flex flex-col gap-3 w-full max-w-xs z-10 mt-8">
           {[
             { icon: '📍', text: '目撃情報をリアルタイムで共有' },
             { icon: '📋', text: '捜索ポスターを自動生成' },
             { icon: '✅', text: '捜索エリアの進捗を管理' },
           ].map(({ icon, text }) => (
-            <div key={text} className="flex items-center gap-3 text-[14px] text-[#3C3C3E] font-medium bg-[#F2F2F7] rounded-2xl px-4 py-3">
+            <div
+              key={text}
+              className="flex items-center gap-3 text-[14px] font-semibold rounded-2xl px-4 py-3"
+              style={{ background: 'rgba(242, 190, 126, 0.65)', color: '#73351F' }}
+            >
               <span className="text-xl">{icon}</span>
               <span>{text}</span>
             </div>
           ))}
         </div>
+
+        {/* CTA ボタン */}
         <button
           onClick={() => setStep('form')}
-          className="w-full max-w-xs bg-[#F97316] text-white py-4 rounded-2xl font-bold text-[17px] shadow-md shadow-orange-200 active:scale-95 transition-all"
+          className="w-full max-w-xs py-4 rounded-2xl font-bold text-[17px] active:scale-95 transition-all z-10 mt-8"
+          style={{ background: '#73351F', color: '#F2D3AC', boxShadow: '0 6px 20px rgba(115,53,31,0.4)' }}
         >
           迷子ペットを登録する
         </button>
