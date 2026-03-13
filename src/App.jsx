@@ -1067,7 +1067,7 @@ export default function App() {
               <GoogleMap
                 mapContainerStyle={{ height: '100%', width: '100%' }}
                 center={mapCenter}
-                zoom={15}
+                zoom={10}
                 options={MAP_OPTIONS}
                 onClick={(e) => handleMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
               >
