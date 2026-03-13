@@ -76,6 +76,19 @@ const AREA_STATUS_STYLE = {
   '発見':    { bg: '#F59E0B', symbol: '★',  badge: 'bg-amber-100 text-amber-600' },
 };
 
+function mkLostIcon() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
+    <path d="M18 0C8.059 0 0 8.059 0 18c0 13.5 18 30 18 30s18-16.5 18-30C36 8.059 27.941 0 18 0Z" fill="#EF4444" stroke="white" stroke-width="2"/>
+    <circle cx="18" cy="18" r="9" fill="white"/>
+    <text x="18" y="23" text-anchor="middle" font-size="13" font-weight="900" fill="#EF4444" font-family="system-ui,-apple-system,sans-serif">失</text>
+  </svg>`;
+  return {
+    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+    scaledSize: new window.google.maps.Size(36, 48),
+    anchor: new window.google.maps.Point(18, 48),
+  };
+}
+
 function mkSightingIcon(num, isLatest) {
   const bg = isLatest ? '#f97316' : '#475569';
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -937,6 +950,7 @@ export default function App() {
 
   // InfoWindow state for main map
   const [selectedSightingId, setSelectedSightingId] = useState(null);
+  const [isLostInfoOpen, setIsLostInfoOpen]         = useState(false);
   // InfoWindow state for tracker map
   const [trackerSightingId, setTrackerSightingId]   = useState(null);
   const [trackerAreaId, setTrackerAreaId]           = useState(null);
@@ -1086,12 +1100,33 @@ export default function App() {
                 options={MAP_OPTIONS}
                 onClick={(e) => handleMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
               >
+                {/* 失踪地点ピン */}
+                {data.petData?.lostLat && data.petData?.lostLng && (
+                  <Marker
+                    position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
+                    icon={mkLostIcon()}
+                    onClick={() => { setIsLostInfoOpen(true); setSelectedSightingId(null); }}
+                    zIndex={999}
+                  />
+                )}
+                {isLostInfoOpen && data.petData?.lostLat && (
+                  <InfoWindow
+                    position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
+                    onCloseClick={() => setIsLostInfoOpen(false)}
+                  >
+                    <div style={{ fontFamily: 'system-ui', textAlign: 'left', maxWidth: 180 }}>
+                      <p style={{ fontWeight: 700, fontSize: 13, color: '#EF4444', marginBottom: 4 }}>📍 失踪場所</p>
+                      <p style={{ fontSize: 11, color: '#1C1C1E', lineHeight: 1.4 }}>{data.petData.lostLocation}</p>
+                      {data.petData.lostDate && <p style={{ fontSize: 11, color: '#8E8E93', marginTop: 4 }}>🗓 {data.petData.lostDate}</p>}
+                    </div>
+                  </InfoWindow>
+                )}
                 {sightings.map((s, i) => (
                   <Marker
                     key={s.id}
                     position={{ lat: s.lat, lng: s.lng }}
                     icon={mkSightingIcon(i + 1, s.id === latestSighting?.id)}
-                    onClick={() => setSelectedSightingId(s.id)}
+                    onClick={() => { setSelectedSightingId(s.id); setIsLostInfoOpen(false); }}
                   />
                 ))}
                 {selectedSightingId !== null && (() => {
