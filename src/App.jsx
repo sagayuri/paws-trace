@@ -539,11 +539,9 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
   // ── Landing step ──
   if (step === 'landing') {
     return (
-      <div
-        className="h-full flex flex-col items-center justify-center relative overflow-hidden px-8"
-        style={{ background: '#F2D3AC' }}
-      >
-        {/* アニメーション足跡（背景装飾） */}
+      <div className="h-full relative overflow-hidden" style={{ background: '#F2D3AC' }}>
+
+        {/* ── 背景：足跡トレイルアニメーション ── */}
         {PAW_POSITIONS.map((p, i) => (
           <PawPrint
             key={i}
@@ -563,61 +561,86 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           />
         ))}
 
-        {/* ロゴ — Adventure Experiment スタイル */}
-        <div className="flex flex-col items-center z-10">
+        {/* ── ヒーローエリア（上部）: ロゴ ── */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10"
+             style={{ paddingBottom: '52%' }}>
           <PawTraceIconMark />
           {/* ── THE ── */}
           <div className="flex items-center gap-3 mt-3">
             <div className="h-px w-9" style={{ background: '#73351F' }}/>
-            <span style={{ color: '#73351F', fontSize: 10, letterSpacing: '0.38em', fontFamily: "'Roboto', sans-serif", fontWeight: 600 }}>
+            <span style={{ color: '#73351F', fontSize: 10, letterSpacing: '0.38em', fontFamily: "'Roboto', sans-serif", fontWeight: 700 }}>
               THE
             </span>
             <div className="h-px w-9" style={{ background: '#73351F' }}/>
           </div>
-          {/* PAWS */}
           <div style={{
-            color: '#73351F', fontSize: 34,
+            color: '#73351F', fontSize: 36,
             fontFamily: "'Roboto', sans-serif",
-            fontWeight: 900, letterSpacing: '0.2em',
-            lineHeight: 1.1, paddingLeft: '0.2em', marginTop: 2,
+            fontWeight: 900, letterSpacing: '0.22em',
+            lineHeight: 1.0, paddingLeft: '0.22em', marginTop: 2,
           }}>PAWS</div>
-          {/* TRACE */}
           <div style={{
-            color: '#73351F', fontSize: 14,
+            color: '#73351F', fontSize: 13,
             fontFamily: "'Roboto', sans-serif",
-            fontWeight: 700, letterSpacing: '0.52em',
-            paddingLeft: '0.52em', marginTop: 2,
+            fontWeight: 700, letterSpacing: '0.55em',
+            paddingLeft: '0.55em', marginTop: 3,
           }}>TRACE</div>
-          {/* Bottom rule */}
           <div className="mt-3 h-px w-36" style={{ background: '#73351F' }}/>
         </div>
 
-        {/* 機能カード */}
-        <div className="flex flex-col gap-2.5 w-full max-w-xs z-10 mt-6">
-          {[
-            { icon: '📍', text: '目撃情報をリアルタイムで共有' },
-            { icon: '📋', text: '捜索ポスターを自動生成' },
-            { icon: '✅', text: '捜索エリアの進捗を管理' },
-          ].map(({ icon, text }) => (
-            <div
-              key={text}
-              className="flex items-center gap-3 text-[13px] font-semibold rounded-xl px-4 py-2.5 tracking-wide"
-              style={{ background: 'rgba(166, 90, 46, 0.12)', color: '#73351F', border: '1px solid rgba(115,53,31,0.15)' }}
-            >
-              <span className="text-lg">{icon}</span>
-              <span>{text}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA ボタン */}
-        <button
-          onClick={() => setStep('form')}
-          className="w-full max-w-xs py-4 rounded-2xl font-bold text-[16px] tracking-widest active:scale-95 transition-all z-10 mt-6"
-          style={{ background: '#73351F', color: '#F2D3AC', boxShadow: '0 6px 20px rgba(115,53,31,0.4)', letterSpacing: '0.08em' }}
+        {/* ── ボトムシートカード ── */}
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-white z-20 px-5 pt-4"
+          style={{ borderRadius: '2rem 2rem 0 0', boxShadow: '0 -8px 40px rgba(115,53,31,0.14)' }}
         >
-          迷子ペットを登録する
-        </button>
+          {/* ドラッグハンドル */}
+          <div className="w-10 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
+
+          {/* ヘッドライン */}
+          <p className="text-[19px] font-bold text-[#1C1C1E] text-center leading-snug mb-5"
+             style={{ fontFamily: "'Roboto', sans-serif" }}>
+            迷子のペットを、<br/>みんなで探す。
+          </p>
+
+          {/* 機能カード — 3列グリッド */}
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {[
+              { icon: '📍', label: '目撃情報\n共有',   bg: '#EBF5FF', iconBg: '#C8E4FF' },
+              { icon: '📋', label: 'ポスター\n自動生成', bg: '#EDFBF2', iconBg: '#C3F0D8' },
+              { icon: '🗺️', label: 'エリア\n管理',    bg: '#FEF8EC', iconBg: '#FDECC8' },
+            ].map(({ icon, label, bg, iconBg }) => (
+              <div key={label}
+                   className="rounded-2xl py-3 px-2 flex flex-col items-center gap-2"
+                   style={{ background: bg }}>
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-[22px]"
+                     style={{ background: iconBg }}>
+                  {icon}
+                </div>
+                <span className="text-[10px] font-semibold text-[#3C3C3E] text-center leading-tight"
+                      style={{ whiteSpace: 'pre-line' }}>
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA ボタン */}
+          <button
+            onClick={() => setStep('form')}
+            className="w-full py-4 rounded-2xl font-bold text-[16px] active:scale-95 transition-all"
+            style={{
+              background: '#73351F', color: '#F2D3AC',
+              letterSpacing: '0.08em',
+              fontFamily: "'Roboto', sans-serif",
+              boxShadow: '0 6px 20px rgba(115,53,31,0.35)',
+            }}
+          >
+            迷子ペットを登録する
+          </button>
+
+          {/* Safe area */}
+          <div style={{ height: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}/>
+        </div>
       </div>
     );
   }
