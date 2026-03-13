@@ -130,40 +130,59 @@ const MAP_OPTIONS = {
 // ─── Logo / decoration ────────────────────────────────────────────────────────
 const LogoIcon = () => (
   <svg width="40" height="30" viewBox="0 0 40 30" fill="none">
-    <path d="M5 12C5 8 8 5 12 5C16 5 19 8 19 12" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="9"  cy="15" r="3" stroke="#F97316" strokeWidth="1.2"/>
-    <circle cx="15" cy="15" r="3" stroke="#F97316" strokeWidth="1.2"/>
-    <path d="M10 15H14" stroke="#F97316" strokeWidth="1"/>
-    <path d="M6 8L8 6M18 8L16 6" stroke="#F97316" strokeWidth="1.2"/>
+    <path d="M5 12C5 8 8 5 12 5C16 5 19 8 19 12" stroke="#73351F" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="9"  cy="15" r="3" stroke="#73351F" strokeWidth="1.2"/>
+    <circle cx="15" cy="15" r="3" stroke="#73351F" strokeWidth="1.2"/>
+    <path d="M10 15H14" stroke="#73351F" strokeWidth="1"/>
+    <path d="M6 8L8 6M18 8L16 6" stroke="#73351F" strokeWidth="1.2"/>
   </svg>
 );
 const MissingFamilyLogo = () => (
   <div className="flex items-center gap-1"><LogoIcon /><LogoIcon /></div>
 );
-const PawPrint = ({ className, fill = '#F97316', style }) => (
+const PawPrint = ({ className, fill = '#A65A2E', style }) => (
   <svg viewBox="0 0 24 24" className={className} fill={fill} style={style}>
     <circle cx="12" cy="16" r="4"/><circle cx="7" cy="8" r="2.5"/>
     <circle cx="12" cy="5" r="2.5"/><circle cx="17" cy="8" r="2.5"/>
   </svg>
 );
 
+// ─── Brand icon mark (Adventure Experiment style geometric paw) ───────────────
+const PawTraceIconMark = () => (
+  <svg width="88" height="88" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Outer frame */}
+    <rect x="2" y="2" width="76" height="76" stroke="#73351F" strokeWidth="2.2"/>
+    {/* Inner frame */}
+    <rect x="7.5" y="7.5" width="65" height="65" stroke="#73351F" strokeWidth="0.9"/>
+    {/* Side accent marks */}
+    <line x1="2" y1="40" x2="7.5" y2="40" stroke="#73351F" strokeWidth="1.4"/>
+    <line x1="72.5" y1="40" x2="78" y2="40" stroke="#73351F" strokeWidth="1.4"/>
+    {/* 3 toe pad circles */}
+    <circle cx="25" cy="30" r="7" fill="none" stroke="#73351F" strokeWidth="1.8"/>
+    <circle cx="40" cy="23" r="7" fill="none" stroke="#73351F" strokeWidth="1.8"/>
+    <circle cx="55" cy="30" r="7" fill="none" stroke="#73351F" strokeWidth="1.8"/>
+    {/* Main pad */}
+    <rect x="23" y="46" width="34" height="23" rx="8" fill="none" stroke="#73351F" strokeWidth="2"/>
+  </svg>
+);
+
 // ─── Flyer Preview ────────────────────────────────────────────────────────────
 const FlyerPreview = ({ petData }) => (
-  <div className="w-full aspect-[1/1.414] bg-white shadow-2xl rounded-sm border-[6px] border-[#F97316] p-3 flex flex-col items-center relative overflow-hidden font-sans">
+  <div className="w-full aspect-[1/1.414] bg-white shadow-2xl rounded-sm border-[6px] border-[#73351F] p-3 flex flex-col items-center relative overflow-hidden font-sans">
     <div className="w-full flex justify-between items-start mb-1">
       <div className="flex flex-col gap-0.5 mt-1">
         <div className="flex gap-1"><PawPrint className="w-4 h-4 -rotate-12"/><PawPrint className="w-3 h-3 rotate-12 mt-1"/></div>
       </div>
       <div className="flex flex-col items-center">
         <MissingFamilyLogo/>
-        <span className="text-[9px] font-black text-[#F97316] uppercase tracking-tighter -mt-1">Missing Family</span>
+        <span className="text-[9px] font-black text-[#73351F] uppercase tracking-tighter -mt-1">Missing Family</span>
       </div>
       <div className="relative">
-        <div className="bg-white border-2 border-[#F97316] rounded-full px-4 py-1 flex flex-col items-center min-w-[70px]">
+        <div className="bg-white border-2 border-[#73351F] rounded-full px-4 py-1 flex flex-col items-center min-w-[70px]">
           <span className="text-[7px] font-bold text-slate-400 -mb-1">NAME</span>
           <span className="text-[11px] font-black text-slate-800">{petData.name}</span>
         </div>
-        <div className="absolute -left-1 bottom-0 w-2 h-2 bg-white border-l-2 border-b-2 border-[#F97316] rotate-45"></div>
+        <div className="absolute -left-1 bottom-0 w-2 h-2 bg-white border-l-2 border-b-2 border-[#73351F] rotate-45"></div>
       </div>
     </div>
     <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter italic">{petData.type}を探しています</h1>
@@ -181,15 +200,15 @@ const FlyerPreview = ({ petData }) => (
       </div>
     </div>
     <div className="w-full flex items-center gap-1.5 mb-2">
-      <div className="h-1 flex-1 bg-[#F97316] rounded-full"></div>
+      <div className="h-1 flex-1 bg-[#73351F] rounded-full"></div>
       <p className="text-[9px] font-black text-slate-800 whitespace-nowrap">{petData.lostDate}　{petData.lostLocation}　付近で行方不明</p>
-      <div className="h-1 flex-1 bg-[#F97316] rounded-full"></div>
+      <div className="h-1 flex-1 bg-[#73351F] rounded-full"></div>
     </div>
     <div className="w-full grid grid-cols-2 gap-3 px-1 mb-2 text-left">
       <div className="space-y-0.5">
         <div className="flex items-center gap-1">
-          <span className="text-[10px] font-black text-[#F97316]">情報</span>
-          <span className="text-[7px] text-orange-400 italic">＼こんな子です！／</span>
+          <span className="text-[10px] font-black text-[#73351F]">情報</span>
+          <span className="text-[7px] text-[#A65A2E] italic">＼こんな子です！／</span>
         </div>
         <div className="text-[8px] font-bold text-slate-700 leading-tight">
           <div className="flex border-b border-dotted border-slate-300 py-0.5"><span className="w-10 text-slate-400">種：</span><span>{petData.breed}</span></div>
@@ -199,8 +218,8 @@ const FlyerPreview = ({ petData }) => (
           <div className="flex py-0.5 leading-tight"><span className="w-10 text-slate-400 shrink-0">特徴：</span><span className="flex-1">{petData.features}</span></div>
         </div>
       </div>
-      <div className="border border-[#F97316]/30 rounded-lg p-1.5 relative flex flex-col bg-slate-50/50">
-        <span className="text-[9px] font-black text-[#F97316]/50 absolute -top-2 left-2 bg-white px-1">MEMO</span>
+      <div className="border border-[#73351F]/30 rounded-lg p-1.5 relative flex flex-col bg-slate-50/50">
+        <span className="text-[9px] font-black text-[#73351F]/50 absolute -top-2 left-2 bg-white px-1">MEMO</span>
         <p className="text-[8px] font-bold text-slate-600 leading-relaxed flex-1 overflow-hidden">{petData.memo}</p>
       </div>
     </div>
@@ -279,7 +298,7 @@ const CropModal = ({ src, onCrop, onCancel }) => {
       <div className="flex items-center justify-between px-5 pt-12 pb-3 shrink-0">
         <button onClick={onCancel} className="text-white/70 text-[15px] font-medium">キャンセル</button>
         <span className="text-white font-semibold text-[15px]">写真を切り取る</span>
-        <button onClick={handleCrop} className="text-[#F97316] font-bold text-[16px]">完了</button>
+        <button onClick={handleCrop} className="text-[#73351F] font-bold text-[16px]">完了</button>
       </div>
       <div
         ref={containerRef}
@@ -436,7 +455,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
       <div className="h-full relative overflow-hidden bg-slate-100">
         {!isLoaded ? (
           <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"/>
+            <div className="w-8 h-8 border-2 border-[#73351F] border-t-transparent rounded-full animate-spin"/>
           </div>
         ) : (
           <GoogleMap
@@ -470,7 +489,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
               onChange={e => setLocationSearchQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleLocationSearch()}
             />
-            <button onClick={handleLocationSearch} className="text-[#F97316] shrink-0 p-1">
+            <button onClick={handleLocationSearch} className="text-[#73351F] shrink-0 p-1">
               <MapPin className="w-5 h-5"/>
             </button>
           </div>
@@ -492,7 +511,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
             <button
               onClick={() => { setForm(f => ({ ...f, lostLocation: locationAddress, lostLat: locationPin.lat, lostLng: locationPin.lng })); setStep('form'); }}
               disabled={isGeocoding}
-              className="w-full bg-[#F97316] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
+              className="w-full bg-[#73351F] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
             >
               この場所を選択
             </button>
@@ -529,22 +548,37 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           />
         ))}
 
-        {/* ロゴ・メインコピー */}
-        <div className="flex flex-col items-center gap-3 z-10">
-          <div
-            className="w-24 h-24 rounded-[2rem] flex items-center justify-center shadow-lg"
-            style={{ background: '#73351F', boxShadow: '0 8px 24px rgba(115,53,31,0.35)' }}
-          >
-            <span className="text-5xl select-none">🐾</span>
+        {/* ロゴ — Adventure Experiment スタイル */}
+        <div className="flex flex-col items-center z-10">
+          <PawTraceIconMark />
+          {/* ── THE ── */}
+          <div className="flex items-center gap-3 mt-3">
+            <div className="h-px w-9" style={{ background: '#73351F' }}/>
+            <span style={{ color: '#73351F', fontSize: 10, letterSpacing: '0.38em', fontFamily: 'Georgia, serif', fontWeight: 600 }}>
+              THE
+            </span>
+            <div className="h-px w-9" style={{ background: '#73351F' }}/>
           </div>
-          <h1 className="text-3xl font-black tracking-tight" style={{ color: '#73351F' }}>PawsTrace</h1>
-          <p className="text-center text-[15px] leading-relaxed font-medium" style={{ color: '#A65A2E' }}>
-            迷子のペットを、みんなで探す
-          </p>
+          {/* PAWS */}
+          <div style={{
+            color: '#73351F', fontSize: 34,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontWeight: 900, letterSpacing: '0.2em',
+            lineHeight: 1.1, paddingLeft: '0.2em', marginTop: 2,
+          }}>PAWS</div>
+          {/* TRACE */}
+          <div style={{
+            color: '#73351F', fontSize: 14,
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontWeight: 700, letterSpacing: '0.52em',
+            paddingLeft: '0.52em', marginTop: 2,
+          }}>TRACE</div>
+          {/* Bottom rule */}
+          <div className="mt-3 h-px w-36" style={{ background: '#73351F' }}/>
         </div>
 
         {/* 機能カード */}
-        <div className="flex flex-col gap-3 w-full max-w-xs z-10 mt-8">
+        <div className="flex flex-col gap-2.5 w-full max-w-xs z-10 mt-6">
           {[
             { icon: '📍', text: '目撃情報をリアルタイムで共有' },
             { icon: '📋', text: '捜索ポスターを自動生成' },
@@ -552,10 +586,10 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           ].map(({ icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-3 text-[14px] font-semibold rounded-2xl px-4 py-3"
-              style={{ background: 'rgba(242, 190, 126, 0.65)', color: '#73351F' }}
+              className="flex items-center gap-3 text-[13px] font-semibold rounded-xl px-4 py-2.5 tracking-wide"
+              style={{ background: 'rgba(166, 90, 46, 0.12)', color: '#73351F', border: '1px solid rgba(115,53,31,0.15)' }}
             >
-              <span className="text-xl">{icon}</span>
+              <span className="text-lg">{icon}</span>
               <span>{text}</span>
             </div>
           ))}
@@ -564,8 +598,8 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
         {/* CTA ボタン */}
         <button
           onClick={() => setStep('form')}
-          className="w-full max-w-xs py-4 rounded-2xl font-bold text-[17px] active:scale-95 transition-all z-10 mt-8"
-          style={{ background: '#73351F', color: '#F2D3AC', boxShadow: '0 6px 20px rgba(115,53,31,0.4)' }}
+          className="w-full max-w-xs py-4 rounded-2xl font-bold text-[16px] tracking-widest active:scale-95 transition-all z-10 mt-6"
+          style={{ background: '#73351F', color: '#F2D3AC', boxShadow: '0 6px 20px rgba(115,53,31,0.4)', letterSpacing: '0.08em' }}
         >
           迷子ペットを登録する
         </button>
@@ -578,7 +612,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
     <>
     <div className="h-full flex flex-col bg-[#F2F2F7] overflow-hidden">
       <div className="bg-white px-4 pt-12 pb-4 border-b border-[#C6C6C8]/40 flex items-center gap-2 shrink-0">
-        <button onClick={() => setStep('landing')} className="text-[#F97316] p-1 -ml-1">
+        <button onClick={() => setStep('landing')} className="text-[#73351F] p-1 -ml-1">
           <ChevronLeft className="w-6 h-6"/>
         </button>
         <h2 className="font-semibold text-[17px] text-[#1C1C1E]">ペット情報を登録</h2>
@@ -591,7 +625,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           <div className="grid grid-cols-3 gap-3">
             {form.images.map((img, i) => (
               <div key={i} className="relative">
-                <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-orange-400' : 'border-slate-200 bg-slate-50'}`}>
+                <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-[#73351F]' : 'border-slate-200 bg-slate-50'}`}>
                   {img ? <img src={img} className="w-full h-full object-cover" alt=""/> : <Camera className="w-6 h-6 text-slate-300"/>}
                   <input type="file" ref={fileRefs[i]} onChange={e => handleImage(i, e)} className="hidden" accept="image/*"/>
                 </div>
@@ -608,10 +642,10 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
             <label className="text-[11px] font-semibold text-[#8E8E93] mb-2 block">動物の種類</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {animalOptions.map(opt => (
-                <button key={opt} onClick={() => setForm(f => ({ ...f, type: opt === 'その他' ? '' : opt }))} className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all ${form.type === opt || (opt === 'その他' && isOther) ? 'bg-[#F97316] text-white shadow-sm' : 'bg-[#F2F2F7] text-[#8E8E93]'}`}>{opt}</button>
+                <button key={opt} onClick={() => setForm(f => ({ ...f, type: opt === 'その他' ? '' : opt }))} className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all ${form.type === opt || (opt === 'その他' && isOther) ? 'bg-[#73351F] text-white shadow-sm' : 'bg-[#F2F2F7] text-[#8E8E93]'}`}>{opt}</button>
               ))}
             </div>
-            {isOther && <input type="text" placeholder="ウサギ、フェレットなど" className="w-full p-3 border-2 border-[#F97316] rounded-xl font-bold outline-none" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}/>}
+            {isOther && <input type="text" placeholder="ウサギ、フェレットなど" className="w-full p-3 border-2 border-[#73351F] rounded-xl font-bold outline-none" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}/>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             {inp('名前 *', 'name', 'ポチ')}
@@ -641,15 +675,15 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
             <div className="col-span-2 space-y-2">
               <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">失踪場所</label>
               {form.lostLocation ? (
-                <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-3">
-                  <MapPin className="w-4 h-4 text-[#F97316] shrink-0"/>
+                <div className="flex items-center gap-2 bg-[#F2D3AC]/40 border border-[#73351F]/20 rounded-xl px-3 py-3">
+                  <MapPin className="w-4 h-4 text-[#73351F] shrink-0"/>
                   <span className="flex-1 text-[13px] font-medium text-[#1C1C1E] leading-snug">{form.lostLocation}</span>
-                  <button onClick={() => setStep('locationMap')} className="text-[11px] text-[#F97316] font-semibold shrink-0">変更</button>
+                  <button onClick={() => setStep('locationMap')} className="text-[11px] text-[#73351F] font-semibold shrink-0">変更</button>
                 </div>
               ) : (
                 <button
                   onClick={() => setStep('locationMap')}
-                  className="flex items-center justify-center gap-2 w-full border border-[#F97316] text-[#F97316] bg-orange-50 py-3 rounded-xl text-[13px] font-medium active:scale-95 transition-all"
+                  className="flex items-center justify-center gap-2 w-full border border-[#73351F] text-[#73351F] bg-[#F2D3AC]/40 py-3 rounded-xl text-[13px] font-medium active:scale-95 transition-all"
                 >
                   <MapPin className="w-4 h-4"/>
                   マップで地点を指定する
@@ -683,7 +717,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
         <button
           onClick={() => { if (form.name.trim()) onComplete(form); }}
           disabled={!form.name.trim()}
-          className="w-full bg-[#F97316] disabled:opacity-40 text-white py-4 rounded-2xl font-bold text-[17px] shadow-md shadow-orange-200 active:scale-95 transition-all"
+          className="w-full bg-[#73351F] disabled:opacity-40 text-white py-4 rounded-2xl font-bold text-[17px] shadow-md shadow-stone-300 active:scale-95 transition-all"
         >
           登録して捜索開始
         </button>
@@ -758,10 +792,10 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
               <label className="text-[11px] font-semibold text-[#8E8E93] mb-2 block">動物の種類</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {animalOptions.map(opt => (
-                  <button key={opt} onClick={() => setPetData({ ...petData, type: opt === 'その他' ? '' : opt })} className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all ${petData.type === opt || (opt === 'その他' && isOther) ? 'bg-[#F97316] text-white shadow-sm' : 'bg-[#F2F2F7] text-[#8E8E93]'}`}>{opt}</button>
+                  <button key={opt} onClick={() => setPetData({ ...petData, type: opt === 'その他' ? '' : opt })} className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all ${petData.type === opt || (opt === 'その他' && isOther) ? 'bg-[#73351F] text-white shadow-sm' : 'bg-[#F2F2F7] text-[#8E8E93]'}`}>{opt}</button>
                 ))}
               </div>
-              {isOther && <input type="text" placeholder="ウサギ、フェレットなど" className="w-full p-3 border-2 border-[#F97316] rounded-xl font-bold outline-none" value={petData.type} onChange={e => setPetData({ ...petData, type: e.target.value })}/>}
+              {isOther && <input type="text" placeholder="ウサギ、フェレットなど" className="w-full p-3 border-2 border-[#73351F] rounded-xl font-bold outline-none" value={petData.type} onChange={e => setPetData({ ...petData, type: e.target.value })}/>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               {inp('名前', 'name')} {inp('品種', 'breed')}
@@ -778,7 +812,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
           </section>
         </div>
         <div className="px-5 py-4 border-t border-[#C6C6C8]/40">
-          <button onClick={onClose} className="w-full bg-[#F97316] text-white py-4 rounded-2xl font-semibold shadow-sm">変更を保存</button>
+          <button onClick={onClose} className="w-full bg-[#73351F] text-white py-4 rounded-2xl font-semibold shadow-sm">変更を保存</button>
         </div>
       </div>
     </div>
@@ -841,8 +875,8 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
               <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">場所</label>
               <div className="relative">
                 {isLoadingAddress
-                  ? <div className="absolute left-3 top-3.5 w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"/>
-                  : <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-orange-500"/>
+                  ? <div className="absolute left-3 top-3.5 w-4 h-4 border-2 border-[#73351F] border-t-transparent rounded-full animate-spin"/>
+                  : <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#73351F]"/>
                 }
                 <input type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" placeholder={isLoadingAddress ? '住所を取得中…' : '場所を入力'} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}/>
               </div>
@@ -880,7 +914,7 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
               <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">メモ</label>
               <textarea placeholder="状況を入力してください" className="w-full p-3 bg-[#F2F2F7] rounded-xl h-24 outline-none text-sm font-medium resize-none text-[#1C1C1E]" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })}/>
             </div>
-            <button onClick={() => onSave(form)} className="w-full bg-[#F97316] text-white py-4 rounded-2xl font-semibold text-base shadow-sm active:scale-95 transition-all">登録</button>
+            <button onClick={() => onSave(form)} className="w-full bg-[#73351F] text-white py-4 rounded-2xl font-semibold text-base shadow-sm active:scale-95 transition-all">登録</button>
           </div>
         </div>
       </div>
@@ -911,7 +945,7 @@ const AreaDetailModal = ({ area, isOpen, onClose, onUpdate, onDelete }) => {
         <div className="p-6 space-y-5">
           <div>
             <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">場所・名称</label>
-            <div className="relative"><MapPin className="absolute left-3 top-3.5 w-4 h-4 text-orange-500"/>
+            <div className="relative"><MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#73351F]"/>
               <input type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-base font-medium text-[#1C1C1E]" value={name} onChange={e => setName(e.target.value)}/>
             </div>
           </div>
@@ -938,7 +972,7 @@ const AreaDetailModal = ({ area, isOpen, onClose, onUpdate, onDelete }) => {
         </div>
         <div className="px-5 py-4 border-t border-[#C6C6C8]/40 flex gap-3">
           <button onClick={() => onDelete(area.id)} className="px-5 py-4 rounded-2xl font-semibold text-[#FF3B30] bg-[#FFF2F1] active:scale-95 transition-all">削除</button>
-          <button onClick={() => onUpdate(area.id, { name, status, note })} className="flex-1 bg-[#F97316] text-white py-4 rounded-2xl font-semibold shadow-sm">変更を保存</button>
+          <button onClick={() => onUpdate(area.id, { name, status, note })} className="flex-1 bg-[#73351F] text-white py-4 rounded-2xl font-semibold shadow-sm">変更を保存</button>
         </div>
       </div>
     </div>
@@ -981,7 +1015,7 @@ const AddAreaModal = ({ isOpen, onClose, onSave }) => {
           <div className="space-y-5">
             <div>
               <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">場所・エリア名</label>
-              <div className="relative"><MapPin className="absolute left-3 top-3.5 w-4 h-4 text-orange-500"/>
+              <div className="relative"><MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#73351F]"/>
                 <input autoFocus type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" value={name} onChange={e => setName(e.target.value)} placeholder="例: ○○公園、駅前商店街" onKeyDown={e => e.key === 'Enter' && name.trim() && handleSave()}/>
               </div>
             </div>
@@ -989,7 +1023,7 @@ const AddAreaModal = ({ isOpen, onClose, onSave }) => {
               <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">メモ (任意)</label>
               <textarea className="w-full p-3 bg-[#F2F2F7] rounded-xl h-20 outline-none text-sm font-medium resize-none text-[#1C1C1E]" value={note} onChange={e => setNote(e.target.value)} placeholder="捜索の注意点など"/>
             </div>
-            <button onClick={handleSave} disabled={!name.trim() || isGeocoding} className="w-full bg-[#F97316] disabled:opacity-40 text-white py-4 rounded-2xl font-semibold text-base shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2">
+            <button onClick={handleSave} disabled={!name.trim() || isGeocoding} className="w-full bg-[#73351F] disabled:opacity-40 text-white py-4 rounded-2xl font-semibold text-base shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2">
               {isGeocoding && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>}
               {isGeocoding ? '場所を取得中…' : '追加する'}
             </button>
@@ -1149,7 +1183,7 @@ export default function App() {
   const MapLoading = () => (
     <div className="w-full h-full flex items-center justify-center bg-slate-100">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-3 border-orange-400 border-t-transparent rounded-full animate-spin" style={{ borderWidth: 3 }}/>
+        <div className="w-8 h-8 border-3 border-[#73351F] border-t-transparent rounded-full animate-spin" style={{ borderWidth: 3 }}/>
         <span className="text-sm font-medium text-[#8E8E93]">マップを読み込み中…</span>
       </div>
     </div>
@@ -1251,7 +1285,7 @@ export default function App() {
             {/* 最新の目撃状況 */}
             <div className="absolute top-4 left-4 right-4 bg-white/96 backdrop-blur-xl shadow-md rounded-2xl px-4 py-3" style={{ zIndex: 10 }}>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse shrink-0"/>
+                <div className="w-2 h-2 bg-[#F2D3AC]/400 rounded-full animate-pulse shrink-0"/>
                 <span className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wide">最新の目撃状況</span>
                 {sightings.length > 0 && (
                   <span className="ml-auto text-[11px] font-medium text-[#8E8E93] bg-[#F2F2F7] px-2 py-0.5 rounded-full shrink-0">{sightings.length}件</span>
@@ -1273,7 +1307,7 @@ export default function App() {
               {isMapMenuOpen && (
                 <div className="flex flex-col items-end gap-3 mb-2">
                   <button onClick={() => { setIsSightingOpen(true); setIsMapMenuOpen(false); }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
-                    <Plus className="w-5 h-5 text-orange-500"/> 目撃情報を追加
+                    <Plus className="w-5 h-5 text-[#73351F]"/> 目撃情報を追加
                   </button>
                   <button onClick={() => {
                     setIsMapMenuOpen(false);
@@ -1290,11 +1324,11 @@ export default function App() {
                       alert('目撃情報をコピーしました');
                     }
                   }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
-                    <Share2 className="w-5 h-5 text-orange-500"/> 目撃情報を共有
+                    <Share2 className="w-5 h-5 text-[#73351F]"/> 目撃情報を共有
                   </button>
                 </div>
               )}
-              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#F97316] text-white'}`}>
+              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#73351F] text-white'}`}>
                 {isMapMenuOpen ? <X className="w-8 h-8"/> : <Plus className="w-8 h-8"/>}
               </button>
             </div>
@@ -1312,7 +1346,7 @@ export default function App() {
                 情報を編集 <ChevronRight className="w-5 h-5 text-slate-400"/>
               </button>
               <div className="relative">
-                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#F97316] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
+                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#73351F] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
                   画像を保存
                 </button>
                 {isSaveMenuOpen && (
@@ -1432,10 +1466,10 @@ export default function App() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-semibold text-[#8E8E93]">捜索進捗</span>
-                    <span className="text-sm font-bold text-[#F97316]">{progress}%</span>
+                    <span className="text-sm font-bold text-[#73351F]">{progress}%</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-orange-500 rounded-full transition-all duration-700" style={{ width: `${progress}%` }}/>
+                    <div className="h-full bg-[#F2D3AC]/400 rounded-full transition-all duration-700" style={{ width: `${progress}%` }}/>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
@@ -1468,7 +1502,7 @@ export default function App() {
                   <ChevronRight className="w-5 h-5 text-[#C6C6C8] shrink-0 ml-auto"/>
                 </div>
               ))}
-              <button onClick={() => setIsAddAreaOpen(true)} className="mx-4 my-3 bg-white text-[#F97316] py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-[#F97316]/30 active:scale-95 transition-all w-[calc(100%-32px)]">
+              <button onClick={() => setIsAddAreaOpen(true)} className="mx-4 my-3 bg-white text-[#73351F] py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-[#73351F]/30 active:scale-95 transition-all w-[calc(100%-32px)]">
                 <Plus className="w-5 h-5"/> エリアを追加
               </button>
             </div>
@@ -1483,7 +1517,7 @@ export default function App() {
           { id: 'flyer',   icon: FileText, label: '捜索ポスター' },
           { id: 'tracker', icon: Target,   label: '捜索進捗' },
         ].map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => { setActiveTab(id); setIsMapMenuOpen(false); setIsSaveMenuOpen(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${activeTab === id ? 'text-[#F97316]' : 'text-[#8E8E93] active:opacity-70'}`}>
+          <button key={id} onClick={() => { setActiveTab(id); setIsMapMenuOpen(false); setIsSaveMenuOpen(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${activeTab === id ? 'text-[#73351F]' : 'text-[#8E8E93] active:opacity-70'}`}>
             <Icon className="w-6 h-6 stroke-[1.8px]"/>
             <span className="text-[10px] font-medium leading-none mt-0.5">{label}</span>
           </button>
@@ -1501,8 +1535,8 @@ export default function App() {
           <div className="bg-white w-full max-w-md rounded-t-3xl pt-3 px-6 pb-6 font-sans" onClick={e => e.stopPropagation()}><div className="w-9 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
             <h3 className="font-semibold text-[17px] text-[#1C1C1E] mb-4">{selectedArea?.name}</h3>
             <div className="grid grid-cols-2 gap-4 pb-2">
-              <button onClick={() => { setIsTrackerMenuOpen(false); setPendingAddress(selectedArea?.name || ''); setIsSightingOpen(true); }} className="p-5 bg-[#FFF3E0] border border-[#F97316]/20 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all">
-                <Camera className="w-8 h-8 text-orange-600"/><span className="text-xs font-medium text-[#1C1C1E]">目撃情報を登録</span>
+              <button onClick={() => { setIsTrackerMenuOpen(false); setPendingAddress(selectedArea?.name || ''); setIsSightingOpen(true); }} className="p-5 bg-[#FFF3E0] border border-[#73351F]/20 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all">
+                <Camera className="w-8 h-8 text-[#73351F]"/><span className="text-xs font-medium text-[#1C1C1E]">目撃情報を登録</span>
               </button>
               <button onClick={() => { setIsTrackerMenuOpen(false); setIsDetailOpen(true); }} className="p-5 bg-[#E8F0FE] border border-[#3B82F6]/20 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all">
                 <ClipboardList className="w-8 h-8 text-indigo-600"/><span className="text-xs font-medium text-[#1C1C1E]">詳細を確認</span>
