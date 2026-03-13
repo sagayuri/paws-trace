@@ -1,0 +1,304 @@
+.progress-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Stats row */
+.progress-stats-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.progress-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.progress-stat-card.success { border-color: #86efac; background: var(--success-bg); }
+.progress-stat-card.warning { border-color: #fde68a; background: var(--warning-bg); }
+.progress-stat-card.neutral { background: #f5f5f4; }
+.progress-stat-card.primary { border-color: var(--primary); background: var(--primary-light); }
+
+.progress-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.progress-stat-card.success .progress-stat-value { color: var(--success); }
+.progress-stat-card.warning .progress-stat-value { color: var(--warning); }
+.progress-stat-card.neutral .progress-stat-value { color: var(--text-muted); }
+.progress-stat-card.primary .progress-stat-value { color: var(--primary-dark); }
+
+.progress-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Progress bar */
+.mb-progress {
+  margin-bottom: 0;
+}
+
+.progress-bar-section {
+  padding: 14px 20px;
+}
+
+.progress-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-bar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.progress-bar-pct {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--success);
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), #4ade80);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.progress-bar-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* Area add form */
+.area-add-form {
+  border-bottom: 1px solid var(--border);
+  background: #f9f7ff;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* Area list */
+.area-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.area-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: all 0.15s;
+}
+
+.area-item:hover {
+  box-shadow: var(--shadow);
+}
+
+.area-item-confirmed {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.area-item-in_progress {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.area-item-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.area-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.area-priority-badge {
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.area-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.area-item-note {
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background 0.1s;
+  min-height: 20px;
+  margin-bottom: 4px;
+}
+
+.area-item-note:hover {
+  background: var(--border);
+}
+
+.area-note-placeholder {
+  color: #d1d5db;
+  font-style: italic;
+}
+
+.area-note-edit {
+  margin-bottom: 4px;
+}
+
+.area-item-meta {
+  font-size: 11px;
+  color: #d1d5db;
+}
+
+.area-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.area-status-select {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  outline: none;
+  color: var(--text);
+}
+
+.area-item-confirmed .area-status-select {
+  border-color: #86efac;
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.area-item-in_progress .area-status-select {
+  border-color: #fde68a;
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.area-delete-btn {
+  background: none;
+  border: none;
+  color: #d1d5db;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.area-delete-btn:hover {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* Tips */
+.tips-card {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #93c5fd;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+.tips-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin-bottom: 10px;
+}
+
+.tips-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tips-list li {
+  font-size: 13px;
+  color: #1e40af;
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.4;
+}
+
+.tips-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .progress-stats-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .area-item {
+    flex-direction: column;
+  }
+
+  .area-item-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

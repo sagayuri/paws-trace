@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaflet z-index: keep tiles/controls inside the mobile container's stacking context */
+.leaflet-pane         { z-index: 4 !important; }
+.leaflet-top,
+.leaflet-bottom       { z-index: 5 !important; }
+.leaflet-control      { z-index: 5 !important; }
+
+/* Thin scrollbar */
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
