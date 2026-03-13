@@ -729,6 +729,7 @@ const nowDatetime = () => {
 
 const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAddress }) => {
   const [form, setForm] = useState({ address: '', time: '', note: '', images: [] });
+  const [cropModal, setCropModal] = useState(null);
   const imgInputRef = useRef(null);
 
   useEffect(() => {
@@ -744,20 +745,23 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
   }, [initialAddress]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleImageAdd = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    files.slice(0, 3 - form.images.length).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => setForm(prev => ({ ...prev, images: [...prev.images, ev.target.result] }));
-      reader.readAsDataURL(file);
-    });
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setCropModal({ src: ev.target.result });
+    reader.readAsDataURL(file);
     e.target.value = '';
+  };
+  const handleCropDone = (croppedSrc) => {
+    setForm(prev => ({ ...prev, images: [...prev.images, croppedSrc] }));
+    setCropModal(null);
   };
 
   const removeImage = (idx) => setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
 
   if (!isOpen) return null;
   return (
+    <>
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm font-sans">
       <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-lg max-h-[90vh] overflow-y-auto">
         <div className="pt-3 px-6 pb-6"><div className="w-9 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
@@ -799,7 +803,7 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
                   <label className="w-20 h-20 rounded-xl border-2 border-dashed border-[#C6C6C8] flex flex-col items-center justify-center cursor-pointer bg-[#F2F2F7] active:opacity-70 shrink-0">
                     <Camera className="w-6 h-6 text-slate-300 mb-1"/>
                     <span className="text-[10px] font-medium text-[#8E8E93] text-center leading-tight">写真を<br/>追加</span>
-                    <input ref={imgInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageAdd}/>
+                    <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageAdd}/>
                   </label>
                 )}
               </div>
@@ -814,6 +818,8 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
         </div>
       </div>
     </div>
+    {cropModal && <CropModal src={cropModal.src} onCrop={handleCropDone} onCancel={() => setCropModal(null)}/>}
+    </>
   );
 };
 
