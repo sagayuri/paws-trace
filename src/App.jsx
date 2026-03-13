@@ -959,6 +959,7 @@ export default function App() {
   // InfoWindow state for main map
   const [selectedSightingId, setSelectedSightingId] = useState(null);
   const [isLostInfoOpen, setIsLostInfoOpen]         = useState(false);
+  const [showEndConfirm, setShowEndConfirm]         = useState(false);
   // InfoWindow state for tracker map
   const [trackerSightingId, setTrackerSightingId]   = useState(null);
   const [trackerAreaId, setTrackerAreaId]           = useState(null);
@@ -993,6 +994,12 @@ export default function App() {
 
   const handleOnboardingComplete = useCallback((formData) => {
     setData(p => ({ ...p, registered: true, petData: formData }));
+  }, []);
+
+  const handleEndSearch = useCallback(() => {
+    setData({ registered: false, petData: EMPTY_PET_DATA, sightings: [], areas: [] });
+    setActiveTab('map');
+    setShowEndConfirm(false);
   }, []);
 
   const { petData, sightings, areas } = data;
@@ -1093,6 +1100,20 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-[#F2F2F7] shadow-xl overflow-hidden font-sans text-[#1C1C1E] border-x border-[#C6C6C8]/30">
+
+      {/* ══ HEADER ═══════════════════════════════════════════════════════════ */}
+      <header className="bg-white border-b border-[#C6C6C8]/40 flex items-center justify-between px-4 shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)', paddingBottom: '10px' }}>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xl">🐾</span>
+          <span className="text-[15px] font-bold text-[#1C1C1E] truncate">{petData.name || 'ペット'}を捜索中</span>
+        </div>
+        <button
+          onClick={() => setShowEndConfirm(true)}
+          className="shrink-0 text-[12px] font-semibold text-[#FF3B30] px-3 py-1.5 rounded-full border border-[#FF3B30]/30 bg-[#FFF2F1] active:opacity-60 transition-opacity ml-3"
+        >
+          捜索終了
+        </button>
+      </header>
 
       {/* ══ CONTENT ══════════════════════════════════════════════════════════ */}
       <div className="flex-1 relative overflow-hidden">
@@ -1431,6 +1452,43 @@ export default function App() {
         onUpdate={(id, upd) => { setAreas(p => p.map(a => a.id === id ? { ...a, ...upd, time: '今すぐ' } : a)); setIsDetailOpen(false); }}
         onDelete={(id) => { setAreas(p => p.filter(a => a.id !== id)); setIsDetailOpen(false); }}
       />
+
+      {/* ══ 捜索終了 確認ダイアログ ══════════════════════════════════════════ */}
+      {showEndConfirm && (
+        <div
+          className="fixed inset-0 z-[500] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowEndConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-3xl mx-6 w-full max-w-xs overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-6 pt-7 pb-5 text-center">
+              <div className="w-14 h-14 bg-[#FFF2F1] rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🔚</span>
+              </div>
+              <p className="text-[17px] font-bold text-[#1C1C1E] mb-2">捜索を終了しますか？</p>
+              <p className="text-[13px] text-[#8E8E93] leading-snug">
+                登録した情報・目撃情報・捜索エリアがすべて削除されます。この操作は取り消せません。
+              </p>
+            </div>
+            <div className="border-t border-[#C6C6C8]/40">
+              <button
+                onClick={handleEndSearch}
+                className="w-full py-4 text-[17px] font-semibold text-[#FF3B30] border-b border-[#C6C6C8]/40 active:bg-[#F2F2F7] transition-colors"
+              >
+                捜索を終了する
+              </button>
+              <button
+                onClick={() => setShowEndConfirm(false)}
+                className="w-full py-4 text-[17px] font-medium text-[#007AFF] active:bg-[#F2F2F7] transition-colors"
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
