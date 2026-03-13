@@ -142,8 +142,13 @@ const MissingFamilyLogo = () => (
 );
 const PawPrint = ({ className, fill = '#A65A2E', style }) => (
   <svg viewBox="0 0 24 24" className={className} fill={fill} style={style}>
-    <circle cx="12" cy="16" r="4"/><circle cx="7" cy="8" r="2.5"/>
-    <circle cx="12" cy="5" r="2.5"/><circle cx="17" cy="8" r="2.5"/>
+    {/* Main pad – wider oval */}
+    <ellipse cx="12" cy="16.5" rx="4.8" ry="4.2"/>
+    {/* 4 toe pads */}
+    <ellipse cx="5.5"  cy="9.5" rx="2.1" ry="2.6"/>
+    <ellipse cx="9.5"  cy="6.5" rx="2.1" ry="2.6"/>
+    <ellipse cx="14.5" cy="6.5" rx="2.1" ry="2.6"/>
+    <ellipse cx="18.5" cy="9.5" rx="2.1" ry="2.6"/>
   </svg>
 );
 
@@ -338,18 +343,28 @@ const CropModal = ({ src, onCrop, onCancel }) => {
 };
 
 // ─── Flyer Edit Modal ─────────────────────────────────────────────────────────
-// ─── Landing screen paw-print positions ──────────────────────────────────────
+// ─── Landing screen paw-print trail (bottom-left → top-right diagonal) ──────
+// Even index = left foot (upper-left offset), Odd = right foot (lower-right offset)
+// Rotation ~-42°/-36° so prints face the direction of travel (up-right)
 const PAW_POSITIONS = [
-  { l: 10, t:  5, r: -20, s: 30, o: 0.22 },
-  { l: 68, t:  4, r:  18, s: 22, o: 0.18 },
-  { l: 84, t: 16, r:  32, s: 26, o: 0.24 },
-  { l:  5, t: 28, r: -12, s: 20, o: 0.20 },
-  { l: 58, t: 20, r:  10, s: 18, o: 0.16 },
-  { l: 80, t: 40, r:  22, s: 24, o: 0.22 },
-  { l: 14, t: 58, r: -28, s: 28, o: 0.26 },
-  { l: 88, t: 65, r:  14, s: 20, o: 0.20 },
-  { l: 42, t: 80, r:  -6, s: 26, o: 0.24 },
-  { l: 70, t: 86, r:  28, s: 18, o: 0.18 },
+  { l: -4, t: 87, r: -42, s: 21, o: 0.26 }, // L
+  { l:  9, t: 89, r: -36, s: 21, o: 0.26 }, // R
+  { l:  8, t: 77, r: -42, s: 21, o: 0.26 }, // L
+  { l: 21, t: 79, r: -36, s: 21, o: 0.26 }, // R
+  { l: 20, t: 68, r: -42, s: 21, o: 0.26 }, // L
+  { l: 33, t: 70, r: -36, s: 21, o: 0.26 }, // R
+  { l: 32, t: 58, r: -42, s: 21, o: 0.26 }, // L
+  { l: 45, t: 61, r: -36, s: 21, o: 0.26 }, // R
+  { l: 44, t: 49, r: -42, s: 21, o: 0.26 }, // L
+  { l: 56, t: 51, r: -36, s: 21, o: 0.26 }, // R
+  { l: 55, t: 39, r: -42, s: 21, o: 0.26 }, // L
+  { l: 68, t: 42, r: -36, s: 21, o: 0.26 }, // R
+  { l: 67, t: 30, r: -42, s: 21, o: 0.26 }, // L
+  { l: 80, t: 32, r: -36, s: 21, o: 0.26 }, // R
+  { l: 79, t: 20, r: -42, s: 21, o: 0.24 }, // L
+  { l: 92, t: 23, r: -36, s: 21, o: 0.24 }, // R
+  { l: 91, t: 11, r: -42, s: 21, o: 0.22 }, // L
+  { l: 103, t: 13, r: -36, s: 21, o: 0.20 }, // R (slightly off-screen, natural trail end)
 ];
 
 // ─── Onboarding Screen ───────────────────────────────────────────────────────
@@ -367,7 +382,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
       i++;
       setPawCount(i);
       if (i >= total) clearInterval(iv);
-    }, 160);
+    }, 130);
     return () => clearInterval(iv);
   }, [step]);
   const [locationPin, setLocationPin] = useState(null);
@@ -554,7 +569,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           {/* ── THE ── */}
           <div className="flex items-center gap-3 mt-3">
             <div className="h-px w-9" style={{ background: '#73351F' }}/>
-            <span style={{ color: '#73351F', fontSize: 10, letterSpacing: '0.38em', fontFamily: 'Georgia, serif', fontWeight: 600 }}>
+            <span style={{ color: '#73351F', fontSize: 10, letterSpacing: '0.38em', fontFamily: "'Roboto', sans-serif", fontWeight: 600 }}>
               THE
             </span>
             <div className="h-px w-9" style={{ background: '#73351F' }}/>
@@ -562,14 +577,14 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           {/* PAWS */}
           <div style={{
             color: '#73351F', fontSize: 34,
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: "'Roboto', sans-serif",
             fontWeight: 900, letterSpacing: '0.2em',
             lineHeight: 1.1, paddingLeft: '0.2em', marginTop: 2,
           }}>PAWS</div>
           {/* TRACE */}
           <div style={{
             color: '#73351F', fontSize: 14,
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: "'Roboto', sans-serif",
             fontWeight: 700, letterSpacing: '0.52em',
             paddingLeft: '0.52em', marginTop: 2,
           }}>TRACE</div>
