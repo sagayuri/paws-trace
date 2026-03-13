@@ -25,6 +25,7 @@ const STORAGE_KEY = 'pawstrace_v3';
 const EMPTY_PET_DATA = {
   name: '', type: '犬', breed: '', gender: '', age: '', color: '',
   size: '', collar: '', features: '', lostDate: '', lostLocation: '',
+  lostLat: null, lostLng: null,
   memo: '', ownerName: '', contact: '', email: '', images: [null, null, null],
 };
 
@@ -34,6 +35,7 @@ const INITIAL_PET_DATA = {
   size: '60cm 約15kg の中型', collar: '緑と赤の三角模様',
   features: '右耳に傷跡があります。人懐っこい性格です。',
   lostDate: '2019年4月1日', lostLocation: '大阪市北区●●●●●',
+  lostLat: 34.7055, lostLng: 135.5015,
   memo: '人見知りで自分からはあまり近寄って来ません。同じ場所でぐるぐる回る癖があります。あまりほえずに静かです。目撃した場所をご連絡ください！',
   ownerName: 'ササキ', contact: '080-0000-1234',
   email: 'zaqwsxedc_o@mail.com', images: [null, null, null],
@@ -446,7 +448,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
               {isGeocoding ? '住所を取得中…' : locationAddress}
             </p>
             <button
-              onClick={() => { setForm(f => ({ ...f, lostLocation: locationAddress })); setStep('form'); }}
+              onClick={() => { setForm(f => ({ ...f, lostLocation: locationAddress, lostLat: locationPin.lat, lostLng: locationPin.lng })); setStep('form'); }}
               disabled={isGeocoding}
               className="w-full bg-[#F97316] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
             >
@@ -916,7 +918,9 @@ const AddAreaModal = ({ isOpen, onClose, onSave }) => {
 export default function App() {
   const [activeTab, setActiveTab]                   = useState('map');
   const [data, setData]                             = useState(loadData);
-  const mapCenter                                   = { lat: 34.7055, lng: 135.5015 }; // Osaka default
+  const mapCenter                                   = (data.petData?.lostLat && data.petData?.lostLng)
+                                                      ? { lat: data.petData.lostLat, lng: data.petData.lostLng }
+                                                      : { lat: 34.7055, lng: 135.5015 }; // Osaka default
 
   // Google Maps API loader
   const { isLoaded } = useJsApiLoader({
