@@ -5,6 +5,10 @@ import {
   CheckCircle2, Circle, X, MapPin, Image as ImageIcon,
   Download, Printer, Trash2, ChevronRight, FileDown, ClipboardList, Share2, ChevronLeft,
 } from 'lucide-react';
+import { colors, typography, FIGMA_PAWS, PAW_ANIM_ORDER } from './tokens';
+import PawTraceLogo from './components/PawTraceLogo';
+import MapPinIcon from './components/icons/MapPinIcon';
+import MissingPosterIcon from './components/icons/MissingPosterIcon';
 
 const GMAPS_LIBRARIES = []; // stable reference — avoids re-load warning
 const GMAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -154,20 +158,23 @@ const PawPrint = ({ className, fill = '#A65A2E', style }) => (
 
 // ─── Brand icon mark (Adventure Experiment style geometric paw) ───────────────
 const PawTraceIconMark = () => (
-  <svg width="88" height="88" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    {/* Outer frame */}
-    <rect x="2" y="2" width="76" height="76" stroke="#73351F" strokeWidth="2.2"/>
-    {/* Inner frame */}
-    <rect x="7.5" y="7.5" width="65" height="65" stroke="#73351F" strokeWidth="0.9"/>
-    {/* Side accent marks */}
-    <line x1="2" y1="40" x2="7.5" y2="40" stroke="#73351F" strokeWidth="1.4"/>
-    <line x1="72.5" y1="40" x2="78" y2="40" stroke="#73351F" strokeWidth="1.4"/>
-    {/* 3 toe pad circles */}
-    <circle cx="25" cy="30" r="7" fill="none" stroke="#73351F" strokeWidth="1.8"/>
-    <circle cx="40" cy="23" r="7" fill="none" stroke="#73351F" strokeWidth="1.8"/>
-    <circle cx="55" cy="30" r="7" fill="none" stroke="#73351F" strokeWidth="1.8"/>
-    {/* Main pad */}
-    <rect x="23" y="46" width="34" height="23" rx="8" fill="none" stroke="#73351F" strokeWidth="2"/>
+  <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    {/* Outer circle border */}
+    <circle cx="50" cy="50" r="46" stroke="#3A8B8B" strokeWidth="2.5"/>
+    {/* Dog silhouette - larger, back-left */}
+    <ellipse cx="41" cy="70" rx="19" ry="13" fill="#3A8B8B"/>
+    <circle cx="37" cy="49" r="13.5" fill="#3A8B8B"/>
+    {/* Dog floppy ears */}
+    <ellipse cx="26.5" cy="42" rx="5.5" ry="9" fill="#3A8B8B" transform="rotate(-12 26.5 42)"/>
+    <ellipse cx="47" cy="41" rx="5" ry="8" fill="#3A8B8B" transform="rotate(18 47 41)"/>
+    {/* Cat silhouette - smaller, front-right */}
+    <ellipse cx="65" cy="73" rx="12" ry="9.5" fill="#3A8B8B"/>
+    <circle cx="67" cy="56" r="9.5" fill="#3A8B8B"/>
+    {/* Cat pointy ears */}
+    <polygon points="60,52 63,40 67,52" fill="#3A8B8B"/>
+    <polygon points="67,52 71,40 74,52" fill="#3A8B8B"/>
+    {/* Subtle depth separator */}
+    <ellipse cx="53" cy="63" rx="2" ry="10" fill="#F2D3AC" opacity="0.45"/>
   </svg>
 );
 
@@ -342,48 +349,20 @@ const CropModal = ({ src, onCrop, onCancel }) => {
   );
 };
 
-// ─── Flyer Edit Modal ─────────────────────────────────────────────────────────
-// ─── Landing screen paw-print trail (bottom-left → top-right diagonal) ──────
-// Even index = left foot (upper-left offset), Odd = right foot (lower-right offset)
-// Rotation ~-42°/-36° so prints face the direction of travel (up-right)
-const PAW_POSITIONS = [
-  { l: -4, t: 87, r: -42, s: 21, o: 0.26 }, // L
-  { l:  9, t: 89, r: -36, s: 21, o: 0.26 }, // R
-  { l:  8, t: 77, r: -42, s: 21, o: 0.26 }, // L
-  { l: 21, t: 79, r: -36, s: 21, o: 0.26 }, // R
-  { l: 20, t: 68, r: -42, s: 21, o: 0.26 }, // L
-  { l: 33, t: 70, r: -36, s: 21, o: 0.26 }, // R
-  { l: 32, t: 58, r: -42, s: 21, o: 0.26 }, // L
-  { l: 45, t: 61, r: -36, s: 21, o: 0.26 }, // R
-  { l: 44, t: 49, r: -42, s: 21, o: 0.26 }, // L
-  { l: 56, t: 51, r: -36, s: 21, o: 0.26 }, // R
-  { l: 55, t: 39, r: -42, s: 21, o: 0.26 }, // L
-  { l: 68, t: 42, r: -36, s: 21, o: 0.26 }, // R
-  { l: 67, t: 30, r: -42, s: 21, o: 0.26 }, // L
-  { l: 80, t: 32, r: -36, s: 21, o: 0.26 }, // R
-  { l: 79, t: 20, r: -42, s: 21, o: 0.24 }, // L
-  { l: 92, t: 23, r: -36, s: 21, o: 0.24 }, // R
-  { l: 91, t: 11, r: -42, s: 21, o: 0.22 }, // L
-  { l: 103, t: 13, r: -36, s: 21, o: 0.20 }, // R (slightly off-screen, natural trail end)
-];
-
 // ─── Onboarding Screen ───────────────────────────────────────────────────────
 const OnboardingScreen = ({ onComplete, isLoaded }) => {
   const [step, setStep] = useState('landing'); // 'landing' | 'form' | 'locationMap'
   const [form, setForm] = useState({ ...EMPTY_PET_DATA });
-  const [pawCount, setPawCount] = useState(0);
+  // pawVisible: Set of paw indices currently shown
+  const [pawVisible, setPawVisible] = useState(new Set());
   const [lostDateRaw, setLostDateRaw] = useState('');
   useEffect(() => {
     if (step !== 'landing') return;
-    setPawCount(0);
-    const total = PAW_POSITIONS.length;
-    let i = 0;
-    const iv = setInterval(() => {
-      i++;
-      setPawCount(i);
-      if (i >= total) clearInterval(iv);
-    }, 130);
-    return () => clearInterval(iv);
+    setPawVisible(new Set());
+    const timers = PAW_ANIM_ORDER.map((idx, step) =>
+      setTimeout(() => setPawVisible(prev => new Set([...prev, idx])), step * 167)
+    );
+    return () => timers.forEach(clearTimeout);
   }, [step]);
   const [locationPin, setLocationPin] = useState(null);
   const [locationAddress, setLocationAddress] = useState('');
@@ -538,109 +517,222 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
 
   // ── Landing step ──
   if (step === 'landing') {
+    // ─ Paw-print SVG paths (Figma node 8:511, 18×18 local coordinate space) ─
+    const PAW_D = [
+      // Main pad
+      "M3.84859 9.3864C4.44638 9.10272 4.93331 8.64079 5.30937 8.09952C6.03107 7.06045 7.40599 6.24637 9.09936 6.45397C10.7927 6.66156 11.9307 7.78323 12.3796 8.96577C12.6133 9.58095 12.9752 10.1472 13.4861 10.5668C14.4849 11.3852 15.0555 12.7003 14.8849 14.0992C14.6219 16.249 12.7057 17.7837 10.6047 17.5272C10.1569 17.4729 9.73737 17.3403 9.35696 17.1468C8.4081 16.6631 7.30491 16.5284 6.26801 16.7686C5.85173 16.8653 5.41263 16.8914 4.96483 16.837C2.86496 16.5794 1.37483 14.6285 1.63894 12.4775C1.81067 11.0787 2.68236 9.94071 3.84859 9.3864Z",
+      // Top-right toe
+      "M17.9998 8.05053C18.0423 6.61891 17.1857 5.43191 16.0865 5.39928C14.9873 5.36666 14.0617 6.50077 14.0192 7.93239C13.9767 9.36401 14.8334 10.551 15.9326 10.5836C17.0318 10.6163 17.9574 9.48216 17.9998 8.05053Z",
+      // Top-left toe
+      "M3.96913 6.70109C4.27351 5.30155 3.64914 3.97755 2.57456 3.74384C1.49998 3.51013 0.382115 4.45523 0.0777347 5.85476C-0.226646 7.25429 0.397724 8.5783 1.4723 8.81201C2.54688 9.04571 3.66475 8.10062 3.96913 6.70109Z",
+      // Upper-right toe
+      "M14.1421 3.27035C14.1845 1.83873 13.3279 0.651722 12.2287 0.619098C11.1295 0.586474 10.2039 1.72059 10.1614 3.15221C10.119 4.58383 10.9756 5.77083 12.0748 5.80346C13.174 5.83608 14.0996 4.70197 14.1421 3.27035Z",
+      // Upper-left toe
+      "M8.86487 2.9924C9.16925 1.59286 8.54488 0.268857 7.4703 0.0351502C6.39572 -0.198557 5.27785 0.746533 4.97347 2.14607C4.66909 3.5456 5.29346 4.86961 6.36804 5.10331C7.44262 5.33702 8.56049 4.39193 8.86487 2.9924Z",
+    ];
+
+    // ─ Shared typography style helper ─
+    const uiFont = typography.fontFamily.ui;
+
     return (
-      <div className="h-full relative overflow-hidden" style={{ background: '#F2D3AC' }}>
+      /* ── Outer: beige background, fills screen ── */
+      <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: colors.brand.sand }}>
 
-        {/* ── 背景：足跡トレイルアニメーション ── */}
-        {PAW_POSITIONS.map((p, i) => (
-          <PawPrint
-            key={i}
-            fill={i % 2 === 0 ? '#A65A2E' : '#73351F'}
-            style={{
-              position: 'absolute',
-              left: `${p.l}%`,
-              top: `${p.t}%`,
-              width: p.s,
-              height: p.s,
-              transform: `rotate(${p.r}deg)`,
-              opacity: i < pawCount ? p.o : 0,
-              transition: 'opacity 0.4s ease-in-out',
-              pointerEvents: 'none',
-              userSelect: 'none',
-            }}
-          />
-        ))}
-
-        {/* ── ヒーローエリア（上部）: ロゴ ── */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10"
-             style={{ paddingBottom: '52%' }}>
-          <PawTraceIconMark />
-          {/* ── THE ── */}
-          <div className="flex items-center gap-3 mt-3">
-            <div className="h-px w-9" style={{ background: '#73351F' }}/>
-            <span style={{ color: '#73351F', fontSize: 10, letterSpacing: '0.38em', fontFamily: "'Roboto', sans-serif", fontWeight: 700 }}>
-              THE
-            </span>
-            <div className="h-px w-9" style={{ background: '#73351F' }}/>
-          </div>
-          <div style={{
-            color: '#73351F', fontSize: 36,
-            fontFamily: "'Roboto', sans-serif",
-            fontWeight: 900, letterSpacing: '0.22em',
-            lineHeight: 1.0, paddingLeft: '0.22em', marginTop: 2,
-          }}>PAWS</div>
-          <div style={{
-            color: '#73351F', fontSize: 13,
-            fontFamily: "'Roboto', sans-serif",
-            fontWeight: 700, letterSpacing: '0.55em',
-            paddingLeft: '0.55em', marginTop: 3,
-          }}>TRACE</div>
-          <div className="mt-3 h-px w-36" style={{ background: '#73351F' }}/>
-        </div>
-
-        {/* ── ボトムシートカード ── */}
-        <div
-          className="absolute bottom-0 left-0 right-0 bg-white z-20 px-5 pt-4"
-          style={{ borderRadius: '2rem 2rem 0 0', boxShadow: '0 -8px 40px rgba(115,53,31,0.14)' }}
+        {/*
+          ══════════════════════════════════════════════════════
+          SVG BACKGROUND LAYER
+          viewBox="0 0 390 844" matches the Figma frame exactly.
+          preserveAspectRatio="xMidYMid slice" fills the screen
+          without black bars (crops symmetrically on tall screens).
+          Contains:
+            1. White surface area (wave path — exact Figma trace)
+            2. 12 paw prints at exact Figma clipPath positions
+          ══════════════════════════════════════════════════════
+        */}
+        <svg
+          viewBox="0 0 390 844"
+          preserveAspectRatio="xMidYMid slice"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+          aria-hidden="true"
         >
-          {/* ドラッグハンドル */}
-          <div className="w-10 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
+          {/* ── Wave / white area ── */}
+          {/*
+            Exact Figma path from node 8:471 "Vector 4", SVG export 390×844px.
+            Wave top ranges from y=418.78 (right) to y=491.58 (left).
+          */}
+          <path
+            d="M-13.7877 855.839V491.578C70.0345 447.696 146.436 500.48 212.663 491.578C278.889 482.676 320.704 437.697 419.033 418.78V855.839H-13.7877Z"
+            fill={colors.brand.surface}
+          />
 
-          {/* ヘッドライン */}
-          <p className="text-[19px] font-bold text-[#1C1C1E] text-center leading-snug mb-5"
-             style={{ fontFamily: "'Roboto', sans-serif" }}>
-            迷子のペットを、<br/>みんなで探す。
-          </p>
+          {/* ── 12 Paw prints ── */}
+          {/*
+            Positions from Figma clipPath defs (frame SVG defs section).
+            transform="translate(x y) rotate(r)" places local 18×18 paths
+            at the exact frame coordinates verified against Figma paths.
+          */}
+          {FIGMA_PAWS.map((p, i) => (
+            <g
+              key={i}
+              transform={`translate(${p.x} ${p.y}) rotate(${p.r})`}
+              style={{
+                opacity: pawVisible.has(i) ? 0.55 : 0,
+                transition: 'opacity 0.3s ease-out',
+              }}
+            >
+              {PAW_D.map((d, j) => (
+                <path key={j} d={d} fill={colors.brand.teal} />
+              ))}
+            </g>
+          ))}
+        </svg>
 
-          {/* 機能カード — 3列グリッド */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            {[
-              { icon: '📍', label: '目撃情報\n共有',   bg: '#EBF5FF', iconBg: '#C8E4FF' },
-              { icon: '📋', label: 'ポスター\n自動生成', bg: '#EDFBF2', iconBg: '#C3F0D8' },
-              { icon: '🗺️', label: 'エリア\n管理',    bg: '#FEF8EC', iconBg: '#FDECC8' },
-            ].map(({ icon, label, bg, iconBg }) => (
-              <div key={label}
-                   className="rounded-2xl py-3 px-2 flex flex-col items-center gap-2"
-                   style={{ background: bg }}>
-                <div className="w-11 h-11 rounded-full flex items-center justify-center text-[22px]"
-                     style={{ background: iconBg }}>
-                  {icon}
-                </div>
-                <span className="text-[10px] font-semibold text-[#3C3C3E] text-center leading-tight"
-                      style={{ whiteSpace: 'pre-line' }}>
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
+        {/*
+          ══════════════════════════════════════════════════════
+          CONTENT OVERLAY
+          All elements positioned using top/left derived from
+          Figma 390×844 pixel coordinates:
+            top  = figma_y / 844 * 100 + '%'
+            left = figma_x (px, direct)
+          ══════════════════════════════════════════════════════
+        */}
 
-          {/* CTA ボタン */}
-          <button
-            onClick={() => setStep('form')}
-            className="w-full py-4 rounded-2xl font-bold text-[16px] active:scale-95 transition-all"
-            style={{
-              background: '#73351F', color: '#F2D3AC',
-              letterSpacing: '0.08em',
-              fontFamily: "'Roboto', sans-serif",
-              boxShadow: '0 6px 20px rgba(115,53,31,0.35)',
-            }}
-          >
-            迷子ペットを登録する
-          </button>
-
-          {/* Safe area */}
-          <div style={{ height: 'max(env(safe-area-inset-bottom, 0px), 20px)' }}/>
+        {/* ── ロゴ (PawTraceLogo — Figma node 11:2) ── */}
+        {/*
+          Logo bounding box in Figma 390×844 frame:
+            circle top:   y=169.44 → 20.08%
+            logo bottom:  y=350    → 41.47%  (circle 115px + PAW TRACE 23px + tagline 13px + gaps)
+            left:         x=102.5  centered at x=194.5
+          Width 185px = exact width of PAW TRACE lettering span (x=97–282)
+        */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '20.08%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '185px',
+            zIndex: 10,
+            pointerEvents: 'none',
+          }}
+        >
+          <PawTraceLogo color={colors.brand.teal} width={185} />
         </div>
+
+        {/* ── Feature 1: 目撃情報を一括管理 ── */}
+        {/*
+          Figma positions (390×844):
+            Icon (MapPin 40×40): placed at left=23.5px (frame x), top=565px (y=568.4–7.2pad=561→rounded 565)
+            Text starts at: left=73px, top≈568px
+          flex gap = 73 – 23.5 – 40 = 9.5px
+        */}
+        <div
+          style={{
+            position: 'absolute',
+            top: `${565 / 844 * 100}%`,   // ≈66.94%
+            left: '23.5px',
+            right: '23.5px',
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '9.5px',
+          }}
+        >
+          <div style={{ flexShrink: 0, width: 40, height: 40 }}>
+            <MapPinIcon size={40} />
+          </div>
+          <div>
+            <p style={{
+              ...typography.styles.uiLarge,
+              fontFamily: uiFont,
+              color: colors.brand.dark,
+              margin: 0,
+            }}>
+              目撃情報を一括管理
+            </p>
+            <p style={{
+              ...typography.styles.uiBody,
+              fontFamily: uiFont,
+              color: colors.brand.dark,
+              margin: 0,
+              marginTop: '4px',
+            }}>
+              様々な媒体から得た目撃情報を<br />地図上にまとめます
+            </p>
+          </div>
+        </div>
+
+        {/* ── Feature 2: 捜索用チラシ自動生成 ── */}
+        {/*
+          Figma positions (390×844):
+            Icon (MissingPoster 40×40): document at x=107.5,y=660 in frame
+              → icon left = 107.5–6.5(viewbox pad) = 101px
+              → icon top  = 660–3(viewbox pad) = 657px  → 77.84%
+            Text starts at: left=155px in frame
+            flex gap = 155 – 101 – 40 = 14px
+        */}
+        <div
+          style={{
+            position: 'absolute',
+            top: `${657 / 844 * 100}%`,   // ≈77.84%
+            left: '101px',
+            right: '23.5px',
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '14px',
+          }}
+        >
+          <div style={{ flexShrink: 0, width: 40, height: 40 }}>
+            <MissingPosterIcon size={40} />
+          </div>
+          <div>
+            <p style={{
+              ...typography.styles.uiMedium,
+              fontFamily: uiFont,
+              color: colors.brand.dark,
+              margin: 0,
+            }}>
+              捜索用チラシ自動生成
+            </p>
+            <p style={{
+              ...typography.styles.uiBody,
+              fontFamily: uiFont,
+              color: colors.brand.dark,
+              margin: 0,
+              marginTop: '4px',
+            }}>
+              項目に記載するだけでチラシを<br />自動生成。
+            </p>
+          </div>
+        </div>
+
+        {/* ── CTA ボタン ── */}
+        {/*
+          Figma: rect x=23.5, y=756, width=343, height=56, rx=8, fill=#D97757
+          Text: white, centered in button
+        */}
+        <button
+          onClick={() => setStep('form')}
+          style={{
+            position: 'absolute',
+            top: `${756 / 844 * 100}%`,   // 89.57%
+            left: '23.5px',
+            width: '343px',
+            height: '56px',
+            borderRadius: '8px',
+            background: colors.brand.cta,
+            color: '#FFFFFF',
+            fontFamily: uiFont,
+            ...typography.styles.uiMedium,
+            border: 'none',
+            cursor: 'pointer',
+            zIndex: 20,
+            letterSpacing: '0.32px',
+          }}
+        >
+          搜索をはじめる
+        </button>
       </div>
     );
   }
