@@ -448,86 +448,6 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
     </div>
   );
 
-  // ── Location map step ──
-  if (step === 'locationMap') {
-    return (
-      <div className="h-full relative overflow-hidden bg-slate-100">
-        {!isLoaded ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-[#73351F] border-t-transparent rounded-full animate-spin"/>
-          </div>
-        ) : (
-          <GoogleMap
-            mapContainerStyle={{ height: '100%', width: '100%' }}
-            center={locationPin || { lat: 34.7055, lng: 135.5015 }}
-            zoom={15}
-            options={MAP_OPTIONS}
-            onLoad={map => { locationMapRef.current = map; }}
-            onClick={(e) => handleLocationMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
-          >
-            {locationPin && <Marker position={locationPin}/>}
-          </GoogleMap>
-        )}
-
-        {/* 戻るボタン */}
-        <button
-          onClick={() => setStep('form')}
-          className="absolute top-12 left-4 z-10 bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center active:scale-95 transition-all"
-        >
-          <ChevronLeft className="w-5 h-5 text-[#1C1C1E]"/>
-        </button>
-
-        {/* 検索バー */}
-        <div className="absolute top-12 left-16 right-4 z-10">
-          <div className="bg-white rounded-2xl shadow-md flex items-center px-3 gap-2">
-            <input
-              type="text"
-              placeholder="場所を検索…"
-              className="flex-1 py-3 text-[14px] font-medium outline-none text-[#1C1C1E] bg-transparent"
-              value={locationSearchQuery}
-              onChange={e => setLocationSearchQuery(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLocationSearch()}
-            />
-            <button onClick={handleLocationSearch} className="text-[#73351F] shrink-0 p-1">
-              <MapPin className="w-5 h-5"/>
-            </button>
-          </div>
-          {!locationPin && (
-            <p className="text-[11px] text-white font-semibold text-center mt-2 drop-shadow">
-              地図をタップして失踪場所を選択
-            </p>
-          )}
-        </div>
-
-        {/* 選択確認パネル */}
-        {locationPin && (
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-white rounded-t-3xl shadow-xl px-4 pt-4 pb-6">
-            <div className="w-8 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
-            <p className="text-[13px] text-[#8E8E93] font-medium mb-1">選択中の場所</p>
-            <p className="text-[15px] text-[#1C1C1E] font-semibold mb-4 leading-snug">
-              {isGeocoding ? '住所を取得中…' : locationAddress}
-            </p>
-            <button
-              onClick={() => {
-                setForm(f => ({ ...f, lostLocation: locationAddress, lostLat: locationPin.lat, lostLng: locationPin.lng }));
-                // PetRegistrationScreen からのコールバックがあれば呼ぶ
-                if (typeof window.__mapPickerCallback === 'function') {
-                  window.__mapPickerCallback(locationPin.lat, locationPin.lng, locationAddress);
-                  window.__mapPickerCallback = null;
-                }
-                setStep('form');
-              }}
-              disabled={isGeocoding}
-              className="w-full bg-[#73351F] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
-            >
-              この場所を選択
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   // ── Landing step ──
   if (step === 'landing') {
     // ─ Paw-print SVG paths (Figma node 8:511, 18×18 local coordinate space) ─
@@ -736,9 +656,9 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
     );
   }
 
-  // ── Form step（新: PetRegistrationScreen に委譲） ──
+  // ── Form step（PetRegistrationScreen を常にマウントし、地図はオーバーレイ表示） ──
   return (
-    <>
+    <div className="relative h-full">
       <PetRegistrationScreen
         initialData={form}
         onBack={() => setStep('landing')}
@@ -747,15 +667,88 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           onComplete({ ...form, ...formData });
         }}
         onMapOpen={(cb) => {
-          // 地図ピッカーへ遷移し、確定後にコールバックで値を受け取る
           setStep('locationMap');
-          // locationMapからの確定はhandleLocationConfirm経由で行われる。
-          // コールバックをrefに保存して後で呼び出す。
           window.__mapPickerCallback = cb;
         }}
       />
       {cropModal && <CropModal src={cropModal.src} onCrop={handleCropDone} onCancel={() => setCropModal(null)}/>}
-    </>
+
+      {/* 地図ピッカー — フォームの上にオーバーレイ（フォームはアンマウントしない） */}
+      {step === 'locationMap' && (
+        <div className="absolute inset-0 z-50 overflow-hidden bg-slate-100">
+          {!isLoaded ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-brand-cta border-t-transparent rounded-full animate-spin"/>
+            </div>
+          ) : (
+            <GoogleMap
+              mapContainerStyle={{ height: '100%', width: '100%' }}
+              center={locationPin || { lat: 34.7055, lng: 135.5015 }}
+              zoom={15}
+              options={MAP_OPTIONS}
+              onLoad={map => { locationMapRef.current = map; }}
+              onClick={(e) => handleLocationMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
+            >
+              {locationPin && <Marker position={locationPin}/>}
+            </GoogleMap>
+          )}
+
+          {/* 戻るボタン */}
+          <button
+            onClick={() => setStep('form')}
+            className="absolute top-12 left-4 z-10 bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center active:scale-95 transition-all"
+          >
+            <ChevronLeft className="w-5 h-5 text-[#1C1C1E]"/>
+          </button>
+
+          {/* 検索バー */}
+          <div className="absolute top-12 left-16 right-4 z-10">
+            <div className="bg-white rounded-2xl shadow-md flex items-center px-3 gap-2">
+              <input
+                type="text"
+                placeholder="場所を検索…"
+                className="flex-1 py-3 text-[14px] font-medium outline-none text-[#1C1C1E] bg-transparent"
+                value={locationSearchQuery}
+                onChange={e => setLocationSearchQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleLocationSearch()}
+              />
+              <button onClick={handleLocationSearch} className="text-brand-cta shrink-0 p-1">
+                <MapPin className="w-5 h-5"/>
+              </button>
+            </div>
+            {!locationPin && (
+              <p className="text-[11px] text-white font-semibold text-center mt-2 drop-shadow">
+                地図をタップして失踪場所を選択
+              </p>
+            )}
+          </div>
+
+          {/* 選択確認パネル */}
+          {locationPin && (
+            <div className="absolute bottom-0 left-0 right-0 z-10 bg-white rounded-t-3xl shadow-xl px-4 pt-4 pb-6">
+              <div className="w-8 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
+              <p className="text-[13px] text-[#8E8E93] font-medium mb-1">選択中の場所</p>
+              <p className="text-[15px] text-[#1C1C1E] font-semibold mb-4 leading-snug">
+                {isGeocoding ? '住所を取得中…' : locationAddress}
+              </p>
+              <button
+                onClick={() => {
+                  if (typeof window.__mapPickerCallback === 'function') {
+                    window.__mapPickerCallback(locationPin.lat, locationPin.lng, locationAddress);
+                    window.__mapPickerCallback = null;
+                  }
+                  setStep('form');
+                }}
+                disabled={isGeocoding}
+                className="w-full bg-brand-cta disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
+              >
+                この場所を選択
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
