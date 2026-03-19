@@ -633,120 +633,104 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           <PawTraceLogo color={colors.brand.teal} width={185} />
         </div>
 
-        {/* ── Feature 1: 目撃情報を一括管理 ── */}
+        {/* ── White area: Features + CTA (Figma node 21-11) ── */}
         {/*
-          Figma positions (390×844):
-            Icon (MapPin 40×40): placed at left=23.5px (frame x), top=565px (y=568.4–7.2pad=561→rounded 565)
-            Text starts at: left=73px, top≈568px
-          flex gap = 73 – 23.5 – 40 = 9.5px
+          Flex column in white surface (below wave top ≈55%).
+          space-between distributes Features and CTA regardless of screen height.
+          Feature 1: gap 9.5px (Figma node 8-470)
+          Feature 2: gap 14px  (Figma node 8-470 comment: 155-101-40=14)
         */}
         <div
           style={{
             position: 'absolute',
-            top: `${565 / 844 * 100}%`,   // ≈66.94%
-            left: '23.5px',
-            right: '23.5px',
+            top: '57%',
+            left: 0,
+            right: 0,
+            bottom: 0,
             zIndex: 20,
             display: 'flex',
-            alignItems: 'flex-start',
-            gap: '9.5px',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            gap: '24px',
+            paddingLeft: '23.5px',
+            paddingRight: '23.5px',
+            paddingTop: '8px',
+            paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)',
           }}
         >
-          <div style={{ flexShrink: 0, width: 40, height: 40 }}>
-            <MapPinIcon size={40} />
+          {/* Feature 1: 目撃情報を一括管理 */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '9.5px' }}>
+            <div style={{ flexShrink: 0, width: 40, height: 40 }}>
+              <MapPinIcon size={40} />
+            </div>
+            <div>
+              <p style={{
+                ...typography.styles.uiLarge,
+                fontFamily: uiFont,
+                color: colors.brand.dark,
+                margin: 0,
+              }}>
+                目撃情報を一括管理
+              </p>
+              <p style={{
+                ...typography.styles.uiBody,
+                fontFamily: uiFont,
+                color: colors.brand.dark,
+                margin: 0,
+                marginTop: '4px',
+              }}>
+                様々な媒体から得た目撃情報を<br />地図上にまとめます
+              </p>
+            </div>
           </div>
-          <div>
-            <p style={{
-              ...typography.styles.uiLarge,
-              fontFamily: uiFont,
-              color: colors.brand.dark,
-              margin: 0,
-            }}>
-              目撃情報を一括管理
-            </p>
-            <p style={{
-              ...typography.styles.uiBody,
-              fontFamily: uiFont,
-              color: colors.brand.dark,
-              margin: 0,
-              marginTop: '4px',
-            }}>
-              様々な媒体から得た目撃情報を<br />地図上にまとめます
-            </p>
-          </div>
-        </div>
 
-        {/* ── Feature 2: 捜索用チラシ自動生成 ── */}
-        {/*
-          Figma positions (390×844):
-            Icon (MissingPoster 40×40): document at x=107.5,y=660 in frame
-              → icon left = 107.5–6.5(viewbox pad) = 101px
-              → icon top  = 660–3(viewbox pad) = 657px  → 77.84%
-            Text starts at: left=155px in frame
-            flex gap = 155 – 101 – 40 = 14px
-        */}
-        <div
-          style={{
-            position: 'absolute',
-            top: `${657 / 844 * 100}%`,   // ≈77.84%
-            left: '23.5px',
-            right: '23.5px',
-            zIndex: 20,
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '9.5px',
-          }}
-        >
-          <div style={{ flexShrink: 0, width: 40, height: 40 }}>
-            <MissingPosterIcon size={40} />
+          {/* Feature 2: 捜索用チラシ自動生成 */}
+          {/* Figma node 8-686: icon x=101px in frame → offset = 101 - 23.5(container pad) = 77.5px */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', paddingLeft: '77.5px' }}>
+            <div style={{ flexShrink: 0, width: 40, height: 40 }}>
+              <MissingPosterIcon size={40} />
+            </div>
+            <div>
+              <p style={{
+                ...typography.styles.uiMedium,
+                fontFamily: uiFont,
+                color: colors.brand.dark,
+                margin: 0,
+              }}>
+                捜索用チラシ自動生成
+              </p>
+              <p style={{
+                ...typography.styles.uiBody,
+                fontFamily: uiFont,
+                color: colors.brand.dark,
+                margin: 0,
+                marginTop: '4px',
+              }}>
+                項目に記載するだけでチラシを<br />自動生成。
+              </p>
+            </div>
           </div>
-          <div>
-            <p style={{
+
+          {/* CTA ボタン — Figma: rx=8, fill=#D97757, 56px tall */}
+          <button
+            onClick={() => setStep('form')}
+            style={{
+              width: '100%',
+              height: '56px',
+              borderRadius: '8px',
+              background: colors.brand.cta,
+              color: '#FFFFFF',
+              fontFamily: uiFont,
               ...typography.styles.uiMedium,
-              fontFamily: uiFont,
-              color: colors.brand.dark,
-              margin: 0,
-            }}>
-              捜索用チラシ自動生成
-            </p>
-            <p style={{
-              ...typography.styles.uiBody,
-              fontFamily: uiFont,
-              color: colors.brand.dark,
-              margin: 0,
-              marginTop: '4px',
-            }}>
-              項目に記載するだけでチラシを<br />自動生成。
-            </p>
-          </div>
+              border: 'none',
+              cursor: 'pointer',
+              letterSpacing: '0.32px',
+              flexShrink: 0,
+            }}
+          >
+            搜索をはじめる
+          </button>
         </div>
-
-        {/* ── CTA ボタン ── */}
-        {/*
-          Figma: rect x=23.5, y=756, width=343, height=56, rx=8, fill=#D97757
-          Text: white, centered in button
-        */}
-        <button
-          onClick={() => setStep('form')}
-          style={{
-            position: 'absolute',
-            top: `${756 / 844 * 100}%`,   // 89.57%
-            left: '23.5px',
-            width: '343px',
-            height: '56px',
-            borderRadius: '8px',
-            background: colors.brand.cta,
-            color: '#FFFFFF',
-            fontFamily: uiFont,
-            ...typography.styles.uiMedium,
-            border: 'none',
-            cursor: 'pointer',
-            zIndex: 20,
-            letterSpacing: '0.32px',
-          }}
-        >
-          搜索をはじめる
-        </button>
       </div>
       </>
     );
