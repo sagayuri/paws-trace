@@ -60,15 +60,15 @@ const ANIMAL_OPTIONS = ['犬', '猫', '鳥', 'その他'];
 // ── セクション見出し ─────────────────────────────────────────────────────────
 function SectionHeading({ children, className = '' }) {
   return (
-    <h3 className={`font-ui text-ui-md font-bold text-brand-dark mb-[14px] ${className}`}>
+    <h2 className={`font-ui text-ui-md font-bold text-brand-dark mb-[14px] ${className}`}>
       {children}
-    </h3>
+    </h2>
   );
 }
 
 // ── セクション区切り線 ────────────────────────────────────────────────────────
-function Divider() {
-  return <div className="h-px bg-brand-sand-mid -mx-5" />;
+function Divider({ className = '' }) {
+  return <div className={`h-px bg-brand-sand-mid -mx-5 ${className}`} />;
 }
 
 // ── 選択済み場所 ─────────────────────────────────────────────────────────────
@@ -160,20 +160,34 @@ export default function PetRegistrationScreen({
       {/* ══ SCROLL BODY ═════════════════════════════════════════════ */}
       <div className="prs-scroll flex-1 overflow-y-auto [-webkit-overflow-scrolling:touch] scrollbar-none bg-brand-surface">
 
-        {/* ① 写真 ────────────────────────────────────────────────── */}
+        {/* ① この子のこと（お名前 / 写真 / 種類 / 詳細） ─────────── */}
         <section className="bg-white px-5 pt-5 pb-5 mt-0">
-          <SectionHeading>写真</SectionHeading>
+          <SectionHeading>この子のこと</SectionHeading>
+
+          {/* お名前 */}
+          <FormField
+            label="お名前"
+            required
+            value={form.name}
+            onChange={e => set('name', e.target.value)}
+            placeholder="ポチ"
+          />
+
+          <Divider className="my-5" />
+
+          {/* 写真 */}
+          <p className="block font-ui text-ui-label font-bold tracking-[0.2px] mb-1.5 text-brand-label">写真</p>
           <PhotoUploadGrid
             images={form.images}
             onChange={imgs => set('images', imgs)}
             max={3}
             hint="※最低1枚必須"
           />
-        </section>
 
-        {/* ② 種類 ────────────────────────────────────────────────── */}
-        <section className="bg-white px-5 pt-5 pb-5 mt-3">
-          <SectionHeading>種類</SectionHeading>
+          <Divider className="my-5" />
+
+          {/* 種類 */}
+          <p className="block font-ui text-ui-label font-bold tracking-[0.2px] mb-1.5 text-brand-label">種類</p>
           <RadioGroup
             variant="radio"
             name="pet-type"
@@ -192,61 +206,17 @@ export default function PetRegistrationScreen({
             onOtherChange={val => set('otherType', val)}
             otherPlaceholder="うさぎ等"
           />
-        </section>
 
-        {/* ③ いなくなった場所 ─────────────────────────────────────── */}
-        <section className="bg-white px-5 pt-5 pb-5 mt-3">
-          <SectionHeading>いなくなった場所</SectionHeading>
-          {form.lostLocation ? (
-            <LocationSelected
-              address={form.lostLocation}
-              onClear={() => { set('lostLocation', ''); set('lostLat', null); set('lostLng', null); }}
-            />
-          ) : (
-            <PrimaryButton variant="outline" onClick={handleMapOpen}>
-              地図を開いて場所を選択
-            </PrimaryButton>
-          )}
-          <p className="font-ui text-ui-label font-normal text-brand-muted mt-2 leading-relaxed tracking-[0.1px]">
-            選択された住所が入ります。未選択の場合は非表示。
-          </p>
-        </section>
+          <Divider className="my-5" />
 
-        {/* ④ いなくなった状況 ─────────────────────────────────────── */}
-        <section className="bg-white px-5 pt-5 pb-5 mt-3">
-          <SectionHeading>いなくなった状況</SectionHeading>
-          <FormTextarea
-            value={form.memo}
-            onChange={e => set('memo', e.target.value)}
-            placeholder="いなくなった時の状況を入力"
-            rows={4}
-            maxLength={300}
-          />
-        </section>
-
-        {/* ⑤ この子のこと ─────────────────────────────────────────── */}
-        <section className="bg-white px-5 pt-5 pb-5 mt-3">
-          <SectionHeading>この子のこと</SectionHeading>
-
-          {/* 名前・品種 */}
+          {/* 品種・性別・年齢・毛色・大きさ */}
           <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-            <FormField
-              label="お名前"
-              required
-              value={form.name}
-              onChange={e => set('name', e.target.value)}
-              placeholder="ポチ"
-            />
             <FormField
               label="品種"
               value={form.breed}
               onChange={e => set('breed', e.target.value)}
               placeholder="柴犬"
             />
-          </div>
-
-          {/* 性別・年齢・毛色・大きさ */}
-          <div className="grid grid-cols-2 gap-2.5 mb-2.5">
             <FormField
               label="性別"
               value={form.gender}
@@ -282,6 +252,21 @@ export default function PetRegistrationScreen({
             className="mb-2.5"
           />
 
+          {/* 見た目の特徴 */}
+          <FormTextarea
+            label="見た目の特徴・性格"
+            value={form.features}
+            onChange={e => set('features', e.target.value)}
+            placeholder="左耳に小さな傷跡あり、人懐っこい性格です"
+            rows={3}
+            maxLength={200}
+          />
+        </section>
+
+        {/* ⑤ いなくなった時のこと（日・場所・状況） ──────────────── */}
+        <section className="bg-white px-5 pt-5 pb-5 mt-3">
+          <SectionHeading>いなくなった時のこと</SectionHeading>
+
           {/* いなくなった日 */}
           <FormField
             label="いなくなった日"
@@ -292,17 +277,37 @@ export default function PetRegistrationScreen({
               const [y, m, d] = e.target.value.split('-');
               if (y && m && d) set('lostDate', `${y}年${parseInt(m)}月${parseInt(d)}日`);
             }}
-            className="mb-2.5"
+            className="mb-5"
           />
 
-          {/* 見た目の特徴 */}
+          <Divider className="mb-5" />
+
+          {/* いなくなった場所 */}
+          <p className="block font-ui text-ui-label font-bold tracking-[0.2px] mb-1.5 text-brand-label">いなくなった場所</p>
+          {form.lostLocation ? (
+            <LocationSelected
+              address={form.lostLocation}
+              onClear={() => { set('lostLocation', ''); set('lostLat', null); set('lostLng', null); }}
+            />
+          ) : (
+            <PrimaryButton variant="outline" onClick={handleMapOpen}>
+              地図を開いて場所を選択
+            </PrimaryButton>
+          )}
+          <p className="font-ui text-ui-label font-normal text-brand-muted mt-2 mb-5 leading-relaxed tracking-[0.1px]">
+            選択された住所が入ります。未選択の場合は非表示。
+          </p>
+
+          <Divider className="mb-5" />
+
+          {/* いなくなった状況 */}
           <FormTextarea
-            label="見た目の特徴・性格"
-            value={form.features}
-            onChange={e => set('features', e.target.value)}
-            placeholder="左耳に小さな傷跡あり、人懐っこい性格です"
-            rows={3}
-            maxLength={200}
+            label="いなくなった状況"
+            value={form.memo}
+            onChange={e => set('memo', e.target.value)}
+            placeholder="いなくなった時の状況を入力"
+            rows={4}
+            maxLength={300}
           />
         </section>
 
