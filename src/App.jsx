@@ -9,6 +9,8 @@ import { colors, typography, FIGMA_PAWS, PAW_ANIM_ORDER } from './tokens';
 import PawTraceLogo from './components/PawTraceLogo';
 import MapPinIcon from './components/icons/MapPinIcon';
 import MissingPosterIcon from './components/icons/MissingPosterIcon';
+import LostPetRegistrationModal from './components/LostPetRegistrationModal';
+import PetRegistrationScreen from './components/PetRegistrationScreen';
 
 const GMAPS_LIBRARIES = []; // stable reference — avoids re-load warning
 const GMAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -353,16 +355,19 @@ const CropModal = ({ src, onCrop, onCancel }) => {
 const OnboardingScreen = ({ onComplete, isLoaded }) => {
   const [step, setStep] = useState('landing'); // 'landing' | 'form' | 'locationMap'
   const [form, setForm] = useState({ ...EMPTY_PET_DATA });
-  // pawVisible: Set of paw indices currently shown
-  const [pawVisible, setPawVisible] = useState(new Set());
+  const [pawStep, setPawStep] = useState(0);
+  const [regModalOpen, setRegModalOpen] = useState(false);
   const [lostDateRaw, setLostDateRaw] = useState('');
   useEffect(() => {
     if (step !== 'landing') return;
-    setPawVisible(new Set());
-    const timers = PAW_ANIM_ORDER.map((idx, step) =>
-      setTimeout(() => setPawVisible(prev => new Set([...prev, idx])), step * 167)
-    );
-    return () => timers.forEach(clearTimeout);
+    setPawStep(0);
+    let count = 0;
+    const iv = setInterval(() => {
+      count++;
+      setPawStep(count);
+      if (count >= PAW_ANIM_ORDER.length) clearInterval(iv);
+    }, 167);
+    return () => clearInterval(iv);
   }, [step]);
   const [locationPin, setLocationPin] = useState(null);
   const [locationAddress, setLocationAddress] = useState('');
@@ -503,7 +508,15 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
               {isGeocoding ? '住所を取得中…' : locationAddress}
             </p>
             <button
-              onClick={() => { setForm(f => ({ ...f, lostLocation: locationAddress, lostLat: locationPin.lat, lostLng: locationPin.lng })); setStep('form'); }}
+              onClick={() => {
+                setForm(f => ({ ...f, lostLocation: locationAddress, lostLat: locationPin.lat, lostLng: locationPin.lng }));
+                // PetRegistrationScreen からのコールバックがあれば呼ぶ
+                if (typeof window.__mapPickerCallback === 'function') {
+                  window.__mapPickerCallback(locationPin.lat, locationPin.lng, locationAddress);
+                  window.__mapPickerCallback = null;
+                }
+                setStep('form');
+              }}
               disabled={isGeocoding}
               className="w-full bg-[#73351F] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
             >
@@ -535,7 +548,8 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
     const uiFont = typography.fontFamily.ui;
 
     return (
-      /* ── Outer: beige background, fills screen ── */
+      <>
+      {/* ── Outer: beige background, fills screen ── */}
       <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: colors.brand.sand }}>
 
         {/*
@@ -576,7 +590,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
               key={i}
               transform={`translate(${p.x} ${p.y}) rotate(${p.r})`}
               style={{
-                opacity: pawVisible.has(i) ? 0.55 : 0,
+                opacity: PAW_ANIM_ORDER.slice(0, pawStep).includes(i) ? 1 : 0,
                 transition: 'opacity 0.3s ease-out',
               }}
             >
@@ -675,12 +689,12 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           style={{
             position: 'absolute',
             top: `${657 / 844 * 100}%`,   // ≈77.84%
-            left: '101px',
+            left: '23.5px',
             right: '23.5px',
             zIndex: 20,
             display: 'flex',
             alignItems: 'flex-start',
-            gap: '14px',
+            gap: '9.5px',
           }}
         >
           <div style={{ flexShrink: 0, width: 40, height: 40 }}>
@@ -734,126 +748,29 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
           搜索をはじめる
         </button>
       </div>
+      </>
     );
   }
 
-  // ── Form step ──
+  // ── Form step（新: PetRegistrationScreen に委譲） ──
   return (
     <>
-    <div className="h-full flex flex-col bg-[#F2F2F7] overflow-hidden">
-      <div className="bg-white px-4 pt-12 pb-4 border-b border-[#C6C6C8]/40 flex items-center gap-2 shrink-0">
-        <button onClick={() => setStep('landing')} className="text-[#73351F] p-1 -ml-1">
-          <ChevronLeft className="w-6 h-6"/>
-        </button>
-        <h2 className="font-semibold text-[17px] text-[#1C1C1E]">ペット情報を登録</h2>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* 写真 */}
-        <section className="bg-white rounded-2xl p-4">
-          <h4 className="text-[12px] font-semibold text-[#8E8E93] uppercase mb-3">写真（最大3枚）</h4>
-          <div className="grid grid-cols-3 gap-3">
-            {form.images.map((img, i) => (
-              <div key={i} className="relative">
-                <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-[#73351F]' : 'border-slate-200 bg-slate-50'}`}>
-                  {img ? <img src={img} className="w-full h-full object-cover" alt=""/> : <Camera className="w-6 h-6 text-slate-300"/>}
-                  <input type="file" ref={fileRefs[i]} onChange={e => handleImage(i, e)} className="hidden" accept="image/*"/>
-                </div>
-                {img && <button onClick={() => { const imgs = [...form.images]; imgs[i] = null; setForm(f => ({ ...f, images: imgs })); }} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full"><Trash2 className="w-3 h-3"/></button>}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 基本情報 */}
-        <section className="bg-white rounded-2xl p-4 space-y-4">
-          <h4 className="text-[12px] font-semibold text-[#8E8E93] uppercase">基本情報</h4>
-          <div>
-            <label className="text-[11px] font-semibold text-[#8E8E93] mb-2 block">動物の種類</label>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {animalOptions.map(opt => (
-                <button key={opt} onClick={() => setForm(f => ({ ...f, type: opt === 'その他' ? '' : opt }))} className={`px-4 py-2 rounded-xl text-[13px] font-medium transition-all ${form.type === opt || (opt === 'その他' && isOther) ? 'bg-[#73351F] text-white shadow-sm' : 'bg-[#F2F2F7] text-[#8E8E93]'}`}>{opt}</button>
-              ))}
-            </div>
-            {isOther && <input type="text" placeholder="ウサギ、フェレットなど" className="w-full p-3 border-2 border-[#73351F] rounded-xl font-bold outline-none" value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}/>}
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {inp('名前 *', 'name', 'ポチ')}
-            {inp('品種', 'breed', '柴犬')}
-            {inp('性別', 'gender', 'オス')}
-            {inp('年齢', 'age', '3歳')}
-            {inp('毛色', 'color', '茶色')}
-            {inp('大きさ', 'size', '中型')}
-            <div className="col-span-2">
-              {inp('首輪の特徴', 'collar', '赤い首輪')}
-            </div>
-            {/* 失踪日 — date picker */}
-            <div className="col-span-2">
-              <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">失踪日</label>
-              <input
-                type="date"
-                className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium outline-none text-[#1C1C1E]"
-                value={lostDateRaw}
-                onChange={e => {
-                  setLostDateRaw(e.target.value);
-                  const [y, m, d] = e.target.value.split('-');
-                  if (y && m && d) setForm(f => ({ ...f, lostDate: `${y}年${parseInt(m)}月${parseInt(d)}日` }));
-                }}
-              />
-            </div>
-            {/* 失踪場所 — map picker only */}
-            <div className="col-span-2 space-y-2">
-              <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">失踪場所</label>
-              {form.lostLocation ? (
-                <div className="flex items-center gap-2 bg-[#F2D3AC]/40 border border-[#73351F]/20 rounded-xl px-3 py-3">
-                  <MapPin className="w-4 h-4 text-[#73351F] shrink-0"/>
-                  <span className="flex-1 text-[13px] font-medium text-[#1C1C1E] leading-snug">{form.lostLocation}</span>
-                  <button onClick={() => setStep('locationMap')} className="text-[11px] text-[#73351F] font-semibold shrink-0">変更</button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setStep('locationMap')}
-                  className="flex items-center justify-center gap-2 w-full border border-[#73351F] text-[#73351F] bg-[#F2D3AC]/40 py-3 rounded-xl text-[13px] font-medium active:scale-95 transition-all"
-                >
-                  <MapPin className="w-4 h-4"/>
-                  マップで地点を指定する
-                </button>
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">外見の特徴</label>
-            <textarea placeholder="首輪の色、傷跡、毛の模様など" className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium h-20 outline-none resize-none text-[#1C1C1E]" value={form.features} onChange={e => setForm(f => ({ ...f, features: e.target.value }))}/>
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">メモ・性格・備考</label>
-            <textarea placeholder="性格や癖、目撃者へのメッセージなど" className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium h-20 outline-none resize-none text-[#1C1C1E]" value={form.memo} onChange={e => setForm(f => ({ ...f, memo: e.target.value }))}/>
-          </div>
-        </section>
-
-        {/* 連絡先 */}
-        <section className="bg-white rounded-2xl p-4 space-y-3">
-          <h4 className="text-[12px] font-semibold text-[#8E8E93] uppercase">飼い主の連絡先</h4>
-          <div className="space-y-3">
-            {inp('飼い主名', 'ownerName', '山田 太郎')}
-            {inp('電話番号', 'contact', '090-0000-0000')}
-            {inp('メールアドレス', 'email', 'example@mail.com')}
-          </div>
-        </section>
-        <div className="h-2"/>
-      </div>
-
-      <div className="bg-white border-t border-[#C6C6C8]/40 px-4 py-4 shrink-0">
-        <button
-          onClick={() => { if (form.name.trim()) onComplete(form); }}
-          disabled={!form.name.trim()}
-          className="w-full bg-[#73351F] disabled:opacity-40 text-white py-4 rounded-2xl font-bold text-[17px] shadow-md shadow-stone-300 active:scale-95 transition-all"
-        >
-          登録して捜索開始
-        </button>
-      </div>
-    </div>
-    {cropModal && <CropModal src={cropModal.src} onCrop={handleCropDone} onCancel={() => setCropModal(null)}/>}
+      <PetRegistrationScreen
+        initialData={form}
+        onBack={() => setStep('landing')}
+        onSave={(formData) => {
+          setForm(f => ({ ...f, ...formData }));
+          onComplete({ ...form, ...formData });
+        }}
+        onMapOpen={(cb) => {
+          // 地図ピッカーへ遷移し、確定後にコールバックで値を受け取る
+          setStep('locationMap');
+          // locationMapからの確定はhandleLocationConfirm経由で行われる。
+          // コールバックをrefに保存して後で呼び出す。
+          window.__mapPickerCallback = cb;
+        }}
+      />
+      {cropModal && <CropModal src={cropModal.src} onCrop={handleCropDone} onCancel={() => setCropModal(null)}/>}
     </>
   );
 };
