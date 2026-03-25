@@ -945,7 +945,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
           <section>
             <h4 className="text-[13px] font-semibold text-[#8E8E93] uppercase mb-3">写真 (最大2枚)</h4>
             <div className="grid grid-cols-2 gap-3">
-              {petData.images.map((img, i) => (
+              {petData.images.slice(0, 2).map((img, i) => (
                 <div key={i} className="relative">
                   <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-indigo-600' : 'border-slate-200 bg-slate-50 hover:bg-indigo-50'}`}>
                     {img ? <img src={img} className="w-full h-full object-cover" alt=""/> : <Camera className="w-6 h-6 text-slate-300"/>}
