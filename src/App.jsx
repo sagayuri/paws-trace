@@ -181,68 +181,78 @@ const PawTraceIconMark = () => (
 );
 
 // ─── Flyer Preview ────────────────────────────────────────────────────────────
+const DAY_NAMES_JP = ['日', '月', '火', '水', '木', '金', '土'];
+const formatFlyerDate = (dateStr) => {
+  if (!dateStr) return '{発生日}';
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getMonth() + 1}/${d.getDate()} (${DAY_NAMES_JP[d.getDay()]})`;
+};
+
 const FlyerPreview = ({ petData }) => (
-  <div className="w-full aspect-[1/1.414] bg-white shadow-2xl rounded-sm border-[6px] border-[#73351F] p-3 flex flex-col items-center relative overflow-hidden font-sans">
-    <div className="w-full flex justify-between items-start mb-1">
-      <div className="flex flex-col gap-0.5 mt-1">
-        <div className="flex gap-1"><PawPrint className="w-4 h-4 -rotate-12"/><PawPrint className="w-3 h-3 rotate-12 mt-1"/></div>
+  <div className="w-full aspect-[210/297] bg-[#E6D6B5] shadow-2xl rounded-sm flex flex-col overflow-hidden" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+    {/* Header banner */}
+    <div className="mx-3 mt-3 bg-[#D97757] rounded-t-xl py-3 px-4 text-center">
+      <h1 className="text-[28px] font-black text-white tracking-[4px]">{petData.type || '犬'}を探しています</h1>
+    </div>
+
+    {/* Body area */}
+    <div className="mx-3 bg-[#ECE2CE] flex-1 flex flex-col">
+      {/* Photos — 2 side-by-side */}
+      <div className="grid grid-cols-2 gap-2 px-3 pt-3">
+        {[0, 1].map(i => (
+          <div key={i} className="aspect-[4/5] bg-[#FCF1D8] rounded-lg overflow-hidden">
+            {petData.images[i] ? (
+              <img src={petData.images[i]} className="w-full h-full object-cover" alt=""/>
+            ) : null}
+          </div>
+        ))}
       </div>
-      <div className="flex flex-col items-center">
-        <MissingFamilyLogo/>
-        <span className="text-[9px] font-black text-[#73351F] uppercase tracking-tighter -mt-1">Missing Family</span>
+
+      {/* Date & location */}
+      <div className="px-3 pt-2 flex items-baseline gap-2">
+        <span className="text-[14px] font-bold text-[#1A2E2D] whitespace-nowrap">{formatFlyerDate(petData.lostDate)}</span>
+        <span className="text-[12px] font-bold text-[#1A2E2D] flex-1">{petData.lostLocation || '{住所}'}</span>
       </div>
-      <div className="relative">
-        <div className="bg-white border-2 border-[#73351F] rounded-full px-4 py-1 flex flex-col items-center min-w-[70px]">
-          <span className="text-[7px] font-bold text-slate-400 -mb-1">NAME</span>
-          <span className="text-[11px] font-black text-slate-800">{petData.name}</span>
+      <div className="px-3 text-right">
+        <span className="text-[12px] font-bold text-[#1A2E2D]">付近で行方不明</span>
+      </div>
+
+      {/* Info heading */}
+      <div className="px-3 pt-1.5">
+        <div className="text-[12px] font-bold text-[#22807F] border-b-2 border-[#22807F]/50 pb-0.5 mb-1.5">情報</div>
+      </div>
+
+      {/* Info grid + features side by side */}
+      <div className="px-3 grid grid-cols-2 gap-2 flex-1">
+        {/* Left: pet details */}
+        <div className="text-[9px] text-[#1A2E2D] leading-relaxed space-y-0.5">
+          <div className="flex"><span className="text-[#1A2E2D]/60 w-8 shrink-0">名前：</span><span className="font-bold">{petData.name || '—'}</span></div>
+          <div className="flex"><span className="text-[#1A2E2D]/60 w-8 shrink-0">種類：</span><span className="font-bold">{petData.type}{petData.breed ? `／${petData.breed}` : ''}</span></div>
+          <div className="flex gap-2">
+            <span><span className="text-[#1A2E2D]/60">毛色：</span><span className="font-bold">{petData.color || '—'}</span></span>
+            <span><span className="text-[#1A2E2D]/60">性別：</span><span className="font-bold">{petData.gender || '—'}</span></span>
+          </div>
+          <div className="flex"><span className="text-[#1A2E2D]/60 w-8 shrink-0">首輪：</span><span className="font-bold">{petData.collar || '—'}</span></div>
         </div>
-        <div className="absolute -left-1 bottom-0 w-2 h-2 bg-white border-l-2 border-b-2 border-[#73351F] rotate-45"></div>
+
+        {/* Right: features / circumstances */}
+        <div>
+          <div className="text-[9px] font-bold text-[#1A2E2D] mb-0.5">特徴・いなくなった経緯</div>
+          <div className="border border-[#22807F] rounded px-1.5 py-1 text-[8px] text-[#1A2E2D] leading-relaxed min-h-[60px] whitespace-pre-wrap">
+            {[petData.features, petData.memo].filter(Boolean).join('\n') || ''}
+          </div>
+        </div>
       </div>
     </div>
-    <h1 className="text-3xl font-black text-slate-900 mb-2 tracking-tighter italic">{petData.type}を探しています</h1>
-    <div className="w-full grid grid-cols-5 gap-1.5 px-1 mb-2 h-44">
-      <div className="col-span-3 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-        {petData.images[0] ? <img src={petData.images[0]} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center text-slate-300 font-black text-[10px] uppercase italic">sample</div>}
+
+    {/* Contact footer */}
+    <div className="mx-3 mb-3 bg-[#D97757] rounded-b-xl py-2.5 px-3 flex items-center gap-2">
+      <span className="text-[12px] font-bold text-white whitespace-nowrap">連絡先</span>
+      <div className="flex-1">
+        <div className="text-[16px] font-black text-white tracking-wide">{petData.contact || 'XXX-XXXX-XXXX'}</div>
+        {petData.email && <div className="text-[9px] text-white/90">{petData.email}</div>}
       </div>
-      <div className="col-span-2 flex flex-col gap-1.5">
-        <div className="flex-1 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-          {petData.images[1] ? <img src={petData.images[1]} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center text-slate-200 font-black text-[10px] uppercase italic">sample</div>}
-        </div>
-        <div className="flex-1 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
-          {petData.images[2] ? <img src={petData.images[2]} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full flex items-center justify-center text-slate-200 font-black text-[10px] uppercase italic">sample</div>}
-        </div>
-      </div>
-    </div>
-    <div className="w-full flex items-center gap-1.5 mb-2">
-      <div className="h-1 flex-1 bg-[#73351F] rounded-full"></div>
-      <p className="text-[9px] font-black text-slate-800 whitespace-nowrap">{petData.lostDate}　{petData.lostLocation}　付近で行方不明</p>
-      <div className="h-1 flex-1 bg-[#73351F] rounded-full"></div>
-    </div>
-    <div className="w-full grid grid-cols-2 gap-3 px-1 mb-2 text-left">
-      <div className="space-y-0.5">
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] font-black text-[#73351F]">情報</span>
-          <span className="text-[7px] text-[#A65A2E] italic">＼こんな子です！／</span>
-        </div>
-        <div className="text-[8px] font-bold text-slate-700 leading-tight">
-          <div className="flex border-b border-dotted border-slate-300 py-0.5"><span className="w-10 text-slate-400">種：</span><span>{petData.breed}</span></div>
-          <div className="flex border-b border-dotted border-slate-300 py-0.5"><span className="w-10 text-slate-400">性別：</span><span>{petData.gender}</span><span className="ml-2 w-10 text-slate-400">年齢：</span><span>{petData.age}</span></div>
-          <div className="flex border-b border-dotted border-slate-300 py-0.5"><span className="w-10 text-slate-400">毛色：</span><span>{petData.color}</span><span className="ml-2 w-10 text-slate-400">大きさ：</span><span>{petData.size}</span></div>
-          <div className="flex border-b border-dotted border-slate-300 py-0.5"><span className="w-10 text-slate-400">首輪：</span><span>{petData.collar}</span></div>
-          <div className="flex py-0.5 leading-tight"><span className="w-10 text-slate-400 shrink-0">特徴：</span><span className="flex-1">{petData.features}</span></div>
-        </div>
-      </div>
-      <div className="border border-[#73351F]/30 rounded-lg p-1.5 relative flex flex-col bg-slate-50/50">
-        <span className="text-[9px] font-black text-[#73351F]/50 absolute -top-2 left-2 bg-white px-1">MEMO</span>
-        <p className="text-[8px] font-bold text-slate-600 leading-relaxed flex-1 overflow-hidden">{petData.memo}</p>
-      </div>
-    </div>
-    <div className="w-[calc(100%+24px)] bg-[#FCD34D] -mx-3 mt-auto p-1.5 px-4 flex justify-between items-center text-slate-900">
-      <span className="text-[11px] font-black uppercase tracking-tighter">連絡先</span>
-      <div className="flex-1 text-[8px] font-bold tracking-tighter leading-none text-left ml-4">
-        <div>飼い主：{petData.ownerName}　電話番号：{petData.contact}</div>
-        <div className="mt-0.5">mail：{petData.email}</div>
-      </div>
+      <span className="text-[14px] font-bold text-white whitespace-nowrap">{petData.ownerName || '飼主 太郎'}</span>
     </div>
   </div>
 );
@@ -312,7 +322,7 @@ const CropModal = ({ src, onCrop, onCancel }) => {
       <div className="flex items-center justify-between px-5 pt-12 pb-3 shrink-0">
         <button onClick={onCancel} className="text-white/70 text-[15px] font-medium">キャンセル</button>
         <span className="text-white font-semibold text-[15px]">写真を切り取る</span>
-        <button onClick={handleCrop} className="text-[#73351F] font-bold text-[16px]">完了</button>
+        <button onClick={handleCrop} className="relative z-10 text-[#73351F] font-bold text-[16px] opacity-100">完了</button>
       </div>
       <div
         ref={containerRef}

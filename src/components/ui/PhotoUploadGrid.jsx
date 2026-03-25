@@ -108,7 +108,7 @@ function CropModal({ src, onCrop, onCancel }) {
           キャンセル
         </button>
         <span className="text-white font-semibold text-[15px]">写真を切り取る</span>
-        <button onClick={handleCrop} className="text-[#73351F] font-bold text-[16px]">
+        <button onClick={handleCrop} className="relative z-10 text-[#73351F] font-bold text-[16px] opacity-100">
           完了
         </button>
       </div>
