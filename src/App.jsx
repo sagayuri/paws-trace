@@ -9,6 +9,7 @@ import { colors, typography, FIGMA_PAWS, PAW_ANIM_ORDER } from './tokens';
 import PawTraceLogo from './components/PawTraceLogo';
 import MapPinIcon from './components/icons/MapPinIcon';
 import MissingPosterIcon from './components/icons/MissingPosterIcon';
+import PawPrintIcon from './components/icons/PawPrintIcon';
 import LostPetRegistrationModal from './components/LostPetRegistrationModal';
 import PetRegistrationScreen from './components/PetRegistrationScreen';
 
@@ -1235,14 +1236,14 @@ export default function App() {
     <div className="flex flex-col h-screen max-w-md mx-auto bg-[#F2F2F7] shadow-xl overflow-hidden font-sans text-[#1C1C1E] border-x border-[#C6C6C8]/30">
 
       {/* ══ HEADER ═══════════════════════════════════════════════════════════ */}
-      <header className="bg-white border-b border-[#C6C6C8]/40 flex items-center justify-between px-4 shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)', paddingBottom: '10px' }}>
+      <header className="bg-[#E6D6B5] border-b border-[#ECE2CE] flex items-center justify-between px-5 shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)', paddingBottom: '10px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xl">🐾</span>
-          <span className="text-[15px] font-bold text-[#1C1C1E] truncate">{petData.name || 'ペット'}を捜索中</span>
+          <PawPrintIcon color="#22807F" size={20} />
+          <span className="text-[15px] font-bold text-[#1A2E2D] truncate tracking-wide">{petData.name || 'ペット'}を捜索中</span>
         </div>
         <button
           onClick={() => setShowEndConfirm(true)}
-          className="shrink-0 text-[12px] font-semibold text-[#FF3B30] px-3 py-1.5 rounded-full border border-[#FF3B30]/30 bg-[#FFF2F1] active:opacity-60 transition-opacity ml-3"
+          className="shrink-0 text-[12px] font-bold text-[#D97757] px-3 py-1.5 rounded-full border border-[#D97757]/40 bg-white/80 active:opacity-60 transition-opacity ml-3"
         >
           捜索終了
         </button>
@@ -1545,15 +1546,17 @@ export default function App() {
       </div>
 
       {/* ══ BOTTOM NAV ═══════════════════════════════════════════════════════ */}
-      <nav className="bg-white/95 backdrop-blur-2xl border-t border-[#C6C6C8]/40 flex items-center justify-around px-2 pb-safe z-30 shrink-0" style={{paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', paddingTop: '8px'}}>
+      <nav className="bg-[#E6D6B5] border-t border-[#ECE2CE] flex items-center justify-around px-2 z-30 shrink-0" style={{paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', paddingTop: '8px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
         {[
           { id: 'map',     icon: MapIcon,  label: '目撃情報' },
           { id: 'flyer',   icon: FileText, label: '捜索ポスター' },
           { id: 'tracker', icon: Target,   label: '捜索進捗' },
         ].map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => { setActiveTab(id); setIsMapMenuOpen(false); setIsSaveMenuOpen(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${activeTab === id ? 'text-[#73351F]' : 'text-[#8E8E93] active:opacity-70'}`}>
-            <Icon className="w-6 h-6 stroke-[1.8px]"/>
-            <span className="text-[10px] font-medium leading-none mt-0.5">{label}</span>
+          <button key={id} onClick={() => { setActiveTab(id); setIsMapMenuOpen(false); setIsSaveMenuOpen(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${activeTab === id ? 'text-[#22807F]' : 'text-[#1A2E2D]/40 active:opacity-70'}`}>
+            <div className={`rounded-full p-1.5 transition-all ${activeTab === id ? 'bg-[#22807F]/10' : ''}`}>
+              <Icon className="w-5 h-5 stroke-[2px]"/>
+            </div>
+            <span className={`text-[10px] leading-none ${activeTab === id ? 'font-bold' : 'font-medium'}`} style={{ letterSpacing: '0.26px' }}>{label}</span>
           </button>
         ))}
       </nav>
