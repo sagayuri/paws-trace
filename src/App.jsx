@@ -190,14 +190,14 @@ const formatFlyerDate = (dateStr) => {
 };
 
 const FlyerPreview = ({ petData }) => (
-  <div className="w-full aspect-[210/297] bg-[#E6D6B5] shadow-2xl rounded-sm flex flex-col overflow-hidden" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+  <div className="w-full aspect-[210/297] bg-[#E6D6B5] flex flex-col overflow-hidden" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
     {/* Header banner */}
-    <div className="mx-3 mt-3 bg-[#D97757] rounded-t-xl py-3 px-4 text-center">
+    <div className="bg-[#D97757] py-3 px-4 text-center">
       <h1 className="text-[28px] font-black text-white tracking-[4px]">{petData.type || '犬'}を探しています</h1>
     </div>
 
     {/* Body area */}
-    <div className="mx-3 bg-[#ECE2CE] flex-1 flex flex-col">
+    <div className="bg-[#ECE2CE] flex-1 flex flex-col">
       {/* Photos — 2 side-by-side */}
       <div className="grid grid-cols-2 gap-2 px-3 pt-3">
         {[0, 1].map(i => (
@@ -247,7 +247,7 @@ const FlyerPreview = ({ petData }) => (
     </div>
 
     {/* Contact footer */}
-    <div className="mx-3 mb-3 bg-[#D97757] rounded-b-xl py-2.5 px-3 flex items-center gap-2">
+    <div className="bg-[#D97757] py-2.5 px-3 flex items-center gap-2">
       <span className="text-[12px] font-bold text-white whitespace-nowrap">連絡先</span>
       <div className="flex-1">
         <div className="text-[16px] font-black text-white tracking-wide">{petData.contact || 'XXX-XXXX-XXXX'}</div>
@@ -785,18 +785,38 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
     setPetData({ ...petData, images: imgs });
     setCropModal(null);
   };
-  const inp = (label, key, col2 = false) => (
-    <div className={col2 ? 'col-span-2' : ''}>
-      <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">{label}</label>
-      <input type="text" className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium outline-none text-[#1C1C1E]" value={petData[key]} onChange={e => setPetData({ ...petData, [key]: e.target.value })}/>
-    </div>
-  );
-  const ta = (label, key) => (
-    <div className="col-span-2">
-      <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">{label}</label>
-      <textarea className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium h-20 outline-none resize-none text-[#1C1C1E]" value={petData[key]} onChange={e => setPetData({ ...petData, [key]: e.target.value })}/>
-    </div>
-  );
+  const FIELD_MAX = {
+    name: 10, breed: 10, gender: 4, age: 6, color: 8, size: 6,
+    collar: 15, lostDate: 12, lostLocation: 20,
+    features: 80, memo: 80,
+    ownerName: 10, contact: 15, email: 30,
+  };
+  const inp = (label, key, col2 = false) => {
+    const max = FIELD_MAX[key];
+    const val = petData[key] || '';
+    return (
+      <div className={col2 ? 'col-span-2' : ''}>
+        <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 flex justify-between">
+          <span>{label}</span>
+          {max && <span className={`text-[10px] ${val.length > max ? 'text-red-500 font-bold' : 'text-[#C6C6C8]'}`}>{val.length}/{max}</span>}
+        </label>
+        <input type="text" maxLength={max} className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium outline-none text-[#1C1C1E]" value={val} onChange={e => setPetData({ ...petData, [key]: e.target.value })}/>
+      </div>
+    );
+  };
+  const ta = (label, key) => {
+    const max = FIELD_MAX[key];
+    const val = petData[key] || '';
+    return (
+      <div className="col-span-2">
+        <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 flex justify-between">
+          <span>{label}</span>
+          {max && <span className={`text-[10px] ${val.length > max ? 'text-red-500 font-bold' : 'text-[#C6C6C8]'}`}>{val.length}/{max}</span>}
+        </label>
+        <textarea maxLength={max} className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium h-20 outline-none resize-none text-[#1C1C1E]" value={val} onChange={e => setPetData({ ...petData, [key]: e.target.value })}/>
+      </div>
+    );
+  };
 
   return (
     <>
