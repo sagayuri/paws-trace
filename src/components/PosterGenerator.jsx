@@ -66,7 +66,7 @@ export default function PosterGenerator({ petInfo, onPetInfoChange }) {
 
   const handlePhotoAdd = (e) => {
     const files = Array.from(e.target.files)
-    const remaining = 3 - photos.length
+    const remaining = 2 - photos.length
     const toAdd = files.slice(0, remaining)
 
     toAdd.forEach(file => {
@@ -87,7 +87,7 @@ export default function PosterGenerator({ petInfo, onPetInfoChange }) {
   const handleDrop = useCallback((e) => {
     e.preventDefault()
     const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
-    const remaining = 3 - photos.length
+    const remaining = 2 - photos.length
     const toAdd = files.slice(0, remaining)
     toAdd.forEach(file => {
       const url = URL.createObjectURL(file)
@@ -133,7 +133,7 @@ export default function PosterGenerator({ petInfo, onPetInfoChange }) {
           </div>
           <div className="card-body">
             {/* Photo upload */}
-            <div className="section-title">写真（最大3枚）</div>
+            <div className="section-title">写真（最大2枚）</div>
             <div className="photo-upload-area">
               <div className="photo-thumbs">
                 {photos.map((p) => (
@@ -145,7 +145,7 @@ export default function PosterGenerator({ petInfo, onPetInfoChange }) {
                     >✕</button>
                   </div>
                 ))}
-                {photos.length < 3 && (
+                {photos.length < 2 && (
                   <div
                     className="photo-drop-zone"
                     onClick={() => fileInputRef.current?.click()}

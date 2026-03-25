@@ -3,7 +3,7 @@ import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-map
 import {
   Map as MapIcon, FileText, Target, Plus, Camera,
   CheckCircle2, Circle, X, MapPin, Image as ImageIcon,
-  Download, Printer, Trash2, ChevronRight, FileDown, ClipboardList, Share2, ChevronLeft,
+  Download, Printer, Trash2, ChevronRight, FileDown, ClipboardList, Share2, ChevronLeft, Calendar,
 } from 'lucide-react';
 import { colors, typography, FIGMA_PAWS, PAW_ANIM_ORDER } from './tokens';
 import PawTraceLogo from './components/PawTraceLogo';
@@ -33,7 +33,7 @@ const EMPTY_PET_DATA = {
   name: '', type: '犬', breed: '', gender: '', age: '', color: '',
   size: '', collar: '', features: '', lostDate: '', lostLocation: '',
   lostLat: null, lostLng: null,
-  memo: '', ownerName: '', contact: '', email: '', images: [null, null, null],
+  memo: '', ownerName: '', contact: '', email: '', images: [null, null],
 };
 
 const INITIAL_PET_DATA = {
@@ -45,7 +45,7 @@ const INITIAL_PET_DATA = {
   lostLat: 34.7055, lostLng: 135.5015,
   memo: '人見知りで自分からはあまり近寄って来ません。同じ場所でぐるぐる回る癖があります。あまりほえずに静かです。目撃した場所をご連絡ください！',
   ownerName: 'ササキ', contact: '080-0000-1234',
-  email: 'zaqwsxedc_o@mail.com', images: [null, null, null],
+  email: 'zaqwsxedc_o@mail.com', images: [null, null],
 };
 
 const INITIAL_SIGHTINGS = [
@@ -198,16 +198,22 @@ const FlyerPreview = ({ petData }) => (
 
     {/* Body area */}
     <div className="bg-[#ECE2CE] flex-1 flex flex-col">
-      {/* Photos — 2 side-by-side */}
-      <div className="grid grid-cols-2 gap-2 px-3 pt-3">
-        {[0, 1].map(i => (
-          <div key={i} className="aspect-[4/5] bg-[#FCF1D8] rounded-lg overflow-hidden">
-            {petData.images[i] ? (
-              <img src={petData.images[i]} className="w-full h-full object-cover" alt=""/>
-            ) : null}
+      {/* Photos — 1 photo full width, 2 photos side-by-side */}
+      {(() => {
+        const filled = petData.images.filter(Boolean);
+        const count = filled.length;
+        return (
+          <div className={`grid ${count <= 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-2 px-3 pt-3`}>
+            {count === 0 ? (
+              <div className="aspect-[4/3] bg-[#FCF1D8] rounded-lg" />
+            ) : filled.map((src, i) => (
+              <div key={i} className={`${count === 1 ? 'aspect-[4/3]' : 'aspect-[4/5]'} bg-[#FCF1D8] rounded-lg overflow-hidden`}>
+                <img src={src} className="w-full h-full object-cover" alt=""/>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* Date & location */}
       <div className="px-3 pt-2 flex items-baseline gap-2">
@@ -386,8 +392,8 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
   const [cropModal, setCropModal] = useState(null);
   const locationMapRef = useRef(null);
-  const r0 = useRef(null), r1 = useRef(null), r2 = useRef(null);
-  const fileRefs = [r0, r1, r2];
+  const r0 = useRef(null), r1 = useRef(null);
+  const fileRefs = [r0, r1];
   const animalOptions = ['犬', '猫', '鳥', 'その他'];
   const isOther = !['犬', '猫', '鳥'].includes(form.type);
 
@@ -763,9 +769,118 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
   );
 };
 
+// ─── Date Picker (Material-inspired, brand トンマナ) ──────────────────────────
+const WEEKDAY_JP = ['日', '月', '火', '水', '木', '金', '土'];
+
+const DatePickerField = ({ label, value, onChange }) => {
+  const [open, setOpen] = useState(false);
+  const today = new Date();
+  const parsed = value ? new Date(value + 'T00:00:00') : null;
+  const [viewYear, setViewYear] = useState(parsed?.getFullYear() || today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(parsed?.getMonth() ?? today.getMonth());
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDow = new Date(viewYear, viewMonth, 1).getDay();
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
+  };
+
+  const selectDay = (day) => {
+    const m = String(viewMonth + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    onChange(`${viewYear}-${m}-${d}`);
+    setOpen(false);
+  };
+
+  const isSelected = (day) => {
+    if (!parsed) return false;
+    return parsed.getFullYear() === viewYear && parsed.getMonth() === viewMonth && parsed.getDate() === day;
+  };
+  const isToday = (day) => {
+    return today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === day;
+  };
+
+  const displayValue = parsed
+    ? `${parsed.getFullYear()}年${parsed.getMonth() + 1}月${parsed.getDate()}日 (${WEEKDAY_JP[parsed.getDay()]})`
+    : '';
+
+  return (
+    <div className="col-span-2 relative">
+      <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">{label}</label>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium text-left text-[#1C1C1E] flex items-center gap-2"
+      >
+        <Calendar className="w-4 h-4 text-[#22807F] shrink-0"/>
+        <span className={displayValue ? '' : 'text-[#C6C6C8]'}>{displayValue || '日付を選択'}</span>
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-xl border border-[#ECE2CE] overflow-hidden w-[320px]" onClick={e => e.stopPropagation()} style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", sans-serif' }}>
+          {/* Header */}
+          <div className="bg-[#E6D6B5] px-4 py-3 flex items-center justify-between">
+            <button type="button" onClick={prevMonth} className="p-1 rounded-full hover:bg-white/30 transition-colors">
+              <ChevronLeft className="w-5 h-5 text-[#1A2E2D]"/>
+            </button>
+            <span className="text-[15px] font-bold text-[#1A2E2D]">{viewYear}年 {viewMonth + 1}月</span>
+            <button type="button" onClick={nextMonth} className="p-1 rounded-full hover:bg-white/30 transition-colors">
+              <ChevronRight className="w-5 h-5 text-[#1A2E2D]"/>
+            </button>
+          </div>
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 px-3 pt-2">
+            {WEEKDAY_JP.map((d, i) => (
+              <div key={d} className={`text-center text-[11px] font-bold py-1 ${i === 0 ? 'text-[#D97757]' : i === 6 ? 'text-[#22807F]' : 'text-[#1A2E2D]/50'}`}>{d}</div>
+            ))}
+          </div>
+          {/* Days grid */}
+          <div className="grid grid-cols-7 px-3 pb-3 gap-y-0.5">
+            {cells.map((day, i) => (
+              <div key={i} className="flex items-center justify-center">
+                {day ? (
+                  <button
+                    type="button"
+                    onClick={() => selectDay(day)}
+                    className={`w-9 h-9 rounded-full text-[13px] font-medium transition-all
+                      ${isSelected(day) ? 'bg-[#22807F] text-white font-bold shadow-sm' : ''}
+                      ${isToday(day) && !isSelected(day) ? 'border-2 border-[#22807F] text-[#22807F] font-bold' : ''}
+                      ${!isSelected(day) && !isToday(day) ? 'text-[#1A2E2D] hover:bg-[#E6D6B5]/50' : ''}
+                    `}
+                  >
+                    {day}
+                  </button>
+                ) : <div className="w-9 h-9"/>}
+              </div>
+            ))}
+          </div>
+          {/* Footer */}
+          <div className="border-t border-[#ECE2CE] px-4 py-2 flex justify-between">
+            <button type="button" onClick={() => { onChange(''); setOpen(false); }} className="text-[12px] font-bold text-[#D97757]">クリア</button>
+            <button type="button" onClick={() => selectDay(today.getDate())} className="text-[12px] font-bold text-[#22807F]"
+              style={{ display: viewYear === today.getFullYear() && viewMonth === today.getMonth() ? '' : 'none' }}
+            >今日</button>
+          </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
-  const r0 = useRef(null), r1 = useRef(null), r2 = useRef(null);
-  const fileRefs = [r0, r1, r2];
+  const r0 = useRef(null), r1 = useRef(null);
+  const fileRefs = [r0, r1];
   const animalOptions = ['犬', '猫', '鳥', 'その他'];
   const isOther = !['犬', '猫', '鳥'].includes(petData.type);
   const [cropModal, setCropModal] = useState(null);
@@ -828,8 +943,8 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
         </div>
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <section>
-            <h4 className="text-[13px] font-semibold text-[#8E8E93] uppercase mb-3">写真 (最大3枚)</h4>
-            <div className="grid grid-cols-3 gap-3">
+            <h4 className="text-[13px] font-semibold text-[#8E8E93] uppercase mb-3">写真 (最大2枚)</h4>
+            <div className="grid grid-cols-2 gap-3">
               {petData.images.map((img, i) => (
                 <div key={i} className="relative">
                   <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-indigo-600' : 'border-slate-200 bg-slate-50 hover:bg-indigo-50'}`}>
@@ -857,7 +972,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData }) => {
               {inp('性別', 'gender')} {inp('年齢', 'age')}
               {inp('毛色', 'color')} {inp('大きさ', 'size')}
               {inp('首輪', 'collar', true)}
-              {inp('失踪日', 'lostDate', true)}
+              <DatePickerField label="失踪日" value={petData.lostDate} onChange={v => setPetData({ ...petData, lostDate: v })}/>
               {inp('失踪場所', 'lostLocation', true)}
               {ta('特徴', 'features')}
               {ta('メモ', 'memo')}
@@ -955,7 +1070,7 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
                     </button>
                   </div>
                 ))}
-                {form.images.length < 3 && (
+                {form.images.length < 2 && (
                   <label className="w-20 h-20 rounded-xl border-2 border-dashed border-[#C6C6C8] flex flex-col items-center justify-center cursor-pointer bg-[#F2F2F7] active:opacity-70 shrink-0">
                     <Camera className="w-6 h-6 text-slate-300 mb-1"/>
                     <span className="text-[10px] font-medium text-[#8E8E93] text-center leading-tight">写真を<br/>追加</span>

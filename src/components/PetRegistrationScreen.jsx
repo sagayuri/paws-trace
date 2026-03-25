@@ -180,7 +180,7 @@ export default function PetRegistrationScreen({
           <PhotoUploadGrid
             images={form.images}
             onChange={imgs => set('images', imgs)}
-            max={3}
+            max={2}
             hint="※最低1枚必須"
           />
 

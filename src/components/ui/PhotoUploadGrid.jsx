@@ -184,9 +184,9 @@ function CropModal({ src, onCrop, onCancel }) {
 
 // ── メイン ────────────────────────────────────────────────────────────────────
 export default function PhotoUploadGrid({
-  images = [null, null, null],
+  images = [null, null],
   onChange,
-  max = 3,
+  max = 2,
   hint,
   disabled = false,
   className = '',
