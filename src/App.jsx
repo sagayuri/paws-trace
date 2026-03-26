@@ -4,12 +4,14 @@ import {
   Map as MapIcon, FileText, Target, Plus, Camera,
   CheckCircle2, Circle, X, MapPin, Image as ImageIcon,
   Download, Printer, Trash2, ChevronRight, FileDown, ClipboardList, Share2, ChevronLeft, Calendar,
+  ChevronUp, ChevronDown, CircleAlert, Crosshair,
 } from 'lucide-react';
 import { colors, typography, FIGMA_PAWS, PAW_ANIM_ORDER } from './tokens';
 import PawTraceLogo from './components/PawTraceLogo';
 import MapPinIcon from './components/icons/MapPinIcon';
 import MissingPosterIcon from './components/icons/MissingPosterIcon';
 import PawPrintIcon from './components/icons/PawPrintIcon';
+import NoteIcon from './components/icons/NoteIcon';
 // LostPetRegistrationModal and PetRegistrationScreen replaced by unified FlyerEditModal
 
 const GMAPS_LIBRARIES = []; // stable reference — avoids re-load warning
@@ -82,31 +84,29 @@ const AREA_STATUS_STYLE = {
   '発見':    { bg: '#F59E0B', symbol: '★',  badge: 'bg-amber-100 text-amber-600' },
 };
 
-// 失踪場所ピン — 赤いティアドロップ（大きめ・地図ピン型）
+// ── Figma node 25-605 準拠ピン SVG パーツ ──
+// ティアドロップ本体（Figma path 正規化: 25.53×34 viewBox）
+const PIN_TEARDROP = 'M25.527 12.763C25.527 5.715 19.813 0 12.763 0C5.697 0 0.003 5.69 0 12.757C-0.002 17.165 2.232 21.053 5.629 23.347C8.279 25.136 10.634 27.325 12.685 29.777L12.764 29.872L13.033 29.55C15.005 27.192 17.278 25.095 19.836 23.39C23.268 21.102 25.528 17.197 25.528 12.764L25.527 12.763Z';
+const PIN_CIRCLE   = 'M12.763 20.949C17.455 20.949 21.258 17.146 21.258 12.454C21.258 7.763 17.455 3.96 12.763 3.96C8.072 3.96 4.269 7.763 4.269 12.454C4.269 17.146 8.072 20.949 12.763 20.949Z';
+const PIN_DOT      = 'M14.184 32.871C14.369 32.087 13.883 31.3 13.099 31.115C12.314 30.93 11.528 31.416 11.342 32.201C11.157 32.985 11.643 33.772 12.428 33.957C13.213 34.142 13.999 33.656 14.184 32.871Z';
+
+// 失踪場所ピン — 赤いティアドロップ（大きめ・「失」表示）Figma準拠
 function mkLostIcon() {
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="58" viewBox="0 0 44 58">'
-    + '<path d="M22 0C9.85 0 0 9.85 0 22c0 16.5 22 36 22 36s22-19.5 22-36C44 9.85 34.15 0 22 0Z" fill="#EF4444" stroke="white" stroke-width="2.5"/>'
-    + '<circle cx="22" cy="22" r="11" fill="white"/>'
-    + '<text x="22" y="27" text-anchor="middle" font-size="14" font-weight="900" fill="#EF4444" font-family="sans-serif">\u5931</text>'
-    + '</svg>';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#ED1C24"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#ED1C24"/><text x="12.76" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="#ED1C24" font-family="sans-serif">\u5931</text></svg>`;
   return {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-    scaledSize: new window.google.maps.Size(44, 58),
-    anchor: new window.google.maps.Point(22, 58),
+    scaledSize: new window.google.maps.Size(36, 48),
+    anchor: new window.google.maps.Point(18, 43),
   };
 }
 
-// 目撃情報ピン — 円形・番号表示。最新＝オレンジ、それ以外＝ブルー（失踪ピンより小さく・形状で差別化）
-function mkSightingIcon(num, isLatest) {
-  const bg = isLatest ? '#F97316' : '#3B82F6';
-  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34">'
-    + '<circle cx="17" cy="17" r="14" fill="' + bg + '" stroke="white" stroke-width="3"/>'
-    + '<text x="17" y="22" text-anchor="middle" font-size="13" font-weight="900" fill="white" font-family="sans-serif">' + num + '</text>'
-    + '</svg>';
+// 目撃情報ピン — 赤いティアドロップ・番号表示（1-10）Figma node 25-605 完全準拠
+function mkSightingIcon(num) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#ED1C24"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#ED1C24"/><text x="12.76" y="${num >= 10 ? '15' : '16'}" text-anchor="middle" font-size="${num >= 10 ? '9' : '11'}" font-weight="900" fill="#ED1C24" font-family="sans-serif">${num}</text></svg>`;
   return {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-    scaledSize: new window.google.maps.Size(34, 34),
-    anchor: new window.google.maps.Point(17, 17),
+    scaledSize: new window.google.maps.Size(30, 40),
+    anchor: new window.google.maps.Point(15, 36),
   };
 }
 
@@ -1279,7 +1279,9 @@ const AddAreaModal = ({ isOpen, onClose, onSave }) => {
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [activeTab, setActiveTab]                   = useState('map');
+  const [activeTab, setActiveTab]                   = useState('map');   // 'map' | 'info'
+  const [mapSubTab, setMapSubTab]                   = useState('sightings'); // 'sightings' | 'areas'
+  const [sheetExpanded, setSheetExpanded]            = useState(false);
   const [data, setData]                             = useState(loadData);
   const mapCenter                                   = (data.petData?.lostLat && data.petData?.lostLng)
                                                       ? { lat: data.petData.lostLat, lng: data.petData.lostLng }
@@ -1511,143 +1513,53 @@ export default function App() {
     <div className="flex flex-col h-screen max-w-md mx-auto bg-[#F2F2F7] shadow-xl overflow-hidden font-sans text-[#1C1C1E] border-x border-[#C6C6C8]/30">
 
       {/* ══ HEADER ═══════════════════════════════════════════════════════════ */}
-      <header className="bg-[#E6D6B5] border-b border-[#ECE2CE] flex items-center justify-between px-5 shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)', paddingBottom: '10px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
-        <div className="flex items-center gap-2 min-w-0">
+      <header
+        className="bg-[#E6D6B5] flex items-center justify-between shrink-0"
+        style={{
+          height: '68px',
+          maxHeight: '68px',
+          paddingLeft: '23.5px',
+          paddingRight: '23.5px',
+          fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif',
+        }}
+      >
+        <div className="flex items-center gap-[8px] min-w-0">
           <PawPrintIcon color="#22807F" size={20} />
-          <span className="text-[15px] font-bold text-[#1A2E2D] truncate tracking-wide">{petData.name || 'ペット'}を捜索中</span>
+          <span
+            className="font-bold text-[#1A2E2D] truncate"
+            style={{ fontSize: '16px', lineHeight: '20.8px', letterSpacing: '0.32px' }}
+          >
+            {petData.name || 'ペット'}を捜索中
+          </span>
         </div>
         <button
-          onClick={() => setShowEndConfirm(true)}
-          className="shrink-0 text-[12px] font-bold text-[#D97757] px-3 py-1.5 rounded-full border border-[#D97757]/40 bg-white/80 active:opacity-60 transition-opacity ml-3"
+          onClick={() => setActiveTab('info')}
+          className="shrink-0 flex items-center justify-center active:opacity-70 transition-opacity"
+          style={{ width: '40px', height: '40px' }}
         >
-          捜索終了
+          <NoteIcon size={40} />
         </button>
       </header>
 
       {/* ══ CONTENT ══════════════════════════════════════════════════════════ */}
       <div className="flex-1 relative overflow-hidden">
 
-        {/* MAP TAB ─────────────────────────────────────────────────────────── */}
-        {activeTab === 'map' && (
-          <div className="h-full relative">
-            {!isLoaded ? <MapLoading/> : (
-              <GoogleMap
-                mapContainerStyle={{ height: '100%', width: '100%' }}
-                center={mapCenter}
-                zoom={12}
-                options={MAP_OPTIONS}
-                onClick={(e) => handleMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
+        {/* INFO SCREEN (迷子情報画面) ────────────────────────────────────── */}
+        {activeTab === 'info' && (
+          <div className="h-full flex flex-col overflow-y-auto bg-[#F2F2F7]">
+            {/* Sub-header with back */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-[#C6C6C8]/40 shrink-0" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+              <button onClick={() => setActiveTab('map')} className="w-9 h-9 flex items-center justify-center rounded-full active:bg-[#F2F2F7] transition-colors">
+                <ChevronLeft className="w-5 h-5 text-[#1A2E2D]"/>
+              </button>
+              <span className="font-bold text-[17px] text-[#1A2E2D] flex-1">迷子情報</span>
+              <button
+                onClick={() => setShowEndConfirm(true)}
+                className="shrink-0 text-[12px] font-bold text-[#D97757] px-3 py-1.5 rounded-full border border-[#D97757]/40 bg-white/80 active:opacity-60 transition-opacity"
               >
-                {/* 失踪地点ピン */}
-                {data.petData?.lostLat && data.petData?.lostLng && (
-                  <Marker
-                    position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
-                    icon={mkLostIcon()}
-                    onClick={() => { setIsLostInfoOpen(true); setSelectedSightingId(null); }}
-                    zIndex={999}
-                  />
-                )}
-                {isLostInfoOpen && data.petData?.lostLat && activeTab === 'map' && (
-                  <InfoWindow
-                    position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
-                    onCloseClick={() => setIsLostInfoOpen(false)}
-                  >
-                    <div style={{ fontFamily: 'system-ui', textAlign: 'left', maxWidth: 180 }}>
-                      <p style={{ fontWeight: 700, fontSize: 13, color: '#EF4444', marginBottom: 4 }}>📍 失踪場所</p>
-                      <p style={{ fontSize: 11, color: '#1C1C1E', lineHeight: 1.4 }}>{data.petData.lostLocation}</p>
-                      {data.petData.lostDate && <p style={{ fontSize: 11, color: '#8E8E93', marginTop: 4 }}>🗓 {data.petData.lostDate}</p>}
-                    </div>
-                  </InfoWindow>
-                )}
-                {sightings.map((s, i) => (
-                  <Marker
-                    key={s.id}
-                    position={{ lat: s.lat, lng: s.lng }}
-                    icon={mkSightingIcon(i + 1, s.id === latestSighting?.id)}
-                    onClick={() => { setSelectedSightingId(s.id); setIsLostInfoOpen(false); }}
-                  />
-                ))}
-                {selectedSightingId !== null && (() => {
-                  const s = sightings.find(x => x.id === selectedSightingId);
-                  const i = sightings.findIndex(x => x.id === selectedSightingId);
-                  if (!s) return null;
-                  return (
-                    <InfoWindow
-                      position={{ lat: s.lat, lng: s.lng }}
-                      onCloseClick={() => setSelectedSightingId(null)}
-                    >
-                      <div style={{ minWidth: 150, fontFamily: 'system-ui', textAlign: 'left' }}>
-                        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>目撃情報 #{i + 1}</p>
-                        {s.time    && <p style={{ fontSize: 11, color: '#64748B', marginBottom: 2 }}>🕐 {fmtDatetime(s.time)}</p>}
-                        {s.address && <p style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>📍 {s.address}</p>}
-                        {s.note    && <p style={{ fontSize: 11, color: '#94A3B8', fontStyle: 'italic', marginBottom: 4 }}>{s.note}</p>}
-                        <button
-                          onClick={() => { setSightings(p => p.filter(x => x.id !== s.id)); setSelectedSightingId(null); }}
-                          style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, width: '100%', textAlign: 'center', background: '#FEF2F2', padding: '4px 0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
-                        >削除</button>
-                      </div>
-                    </InfoWindow>
-                  );
-                })()}
-              </GoogleMap>
-            )}
-
-            {/* 最新の目撃状況 */}
-            <div className="absolute top-4 left-4 right-4 bg-white/96 backdrop-blur-xl shadow-md rounded-2xl px-4 py-3" style={{ zIndex: 10 }}>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 bg-[#F2D3AC]/400 rounded-full animate-pulse shrink-0"/>
-                <span className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wide">最新の目撃状況</span>
-                {sightings.length > 0 && (
-                  <span className="ml-auto text-[11px] font-medium text-[#8E8E93] bg-[#F2F2F7] px-2 py-0.5 rounded-full shrink-0">{sightings.length}件</span>
-                )}
-              </div>
-              {latestSighting ? (
-                <p className="text-[14px] text-[#1C1C1E] leading-snug font-semibold">
-                  {latestSighting.time && `${fmtDatetime(latestSighting.time)} / `}
-                  {latestSighting.address || `${latestSighting.lat?.toFixed(4)}, ${latestSighting.lng?.toFixed(4)}`}
-                  {latestSighting.note && ` — ${latestSighting.note}`}
-                </p>
-              ) : (
-                <p className="text-[14px] text-[#8E8E93] leading-snug">目撃情報なし。マップをタップしてピンを追加。</p>
-              )}
-            </div>
-
-            {/* FAB */}
-            <div className="absolute bottom-6 right-6 flex flex-col items-end gap-3" style={{ zIndex: 10 }}>
-              {isMapMenuOpen && (
-                <div className="flex flex-col items-end gap-3 mb-2">
-                  <button onClick={() => { setIsSightingOpen(true); setIsMapMenuOpen(false); }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
-                    <Plus className="w-5 h-5 text-[#73351F]"/> 目撃情報を追加
-                  </button>
-                  <button onClick={() => {
-                    setIsMapMenuOpen(false);
-                    const lines = sightings.map(s =>
-                      `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
-                    );
-                    const text = lines.length > 0
-                      ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
-                      : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
-                    if (navigator.share) {
-                      navigator.share({ title: `${petData.name}の目撃情報`, text });
-                    } else {
-                      navigator.clipboard?.writeText(text);
-                      alert('目撃情報をコピーしました');
-                    }
-                  }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
-                    <Share2 className="w-5 h-5 text-[#73351F]"/> 目撃情報を共有
-                  </button>
-                </div>
-              )}
-              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#D97757] text-white'}`}>
-                {isMapMenuOpen ? <X className="w-8 h-8"/> : <Plus className="w-8 h-8"/>}
+                捜索終了
               </button>
             </div>
-          </div>
-        )}
-
-        {/* FLYER TAB ───────────────────────────────────────────────────────── */}
-        {activeTab === 'flyer' && (
-          <div className="h-full flex flex-col overflow-y-auto bg-[#F2F2F7]">
             <div className="p-6 flex-1 flex flex-col items-center">
               <div ref={flyerRef}><FlyerPreview petData={petData}/></div>
             </div>
@@ -1678,163 +1590,244 @@ export default function App() {
           </div>
         )}
 
-        {/* TRACKER TAB ─────────────────────────────────────────────────────── */}
-        {activeTab === 'tracker' && (
-          <div className="h-full flex flex-col overflow-hidden bg-[#F2F2F7]">
-            {/* ── Mini map ── */}
-            <div className="relative shrink-0" style={{ height: '50vh' }}>
-              {!isLoaded ? <MapLoading/> : (
-                <GoogleMap
-                  mapContainerStyle={{ height: '100%', width: '100%' }}
-                  center={latestSighting ? { lat: latestSighting.lat, lng: latestSighting.lng } : mapCenter}
-                  zoom={14}
-                  options={{ ...MAP_OPTIONS, zoomControl: false }}
-                  onLoad={handleTrackerMapLoad}
-                >
-                  {/* 捜索エリアピン（四角・ステータスカラー） */}
-                  {areas.filter(a => a.lat && a.lng).map(area => (
-                    <Marker
-                      key={`area-${area.id}`}
-                      position={{ lat: area.lat, lng: area.lng }}
-                      icon={mkAreaIcon(area.status)}
-                      onClick={() => { setTrackerAreaId(area.id); setTrackerSightingId(null); }}
-                    />
-                  ))}
-                  {/* 目撃情報ピン（ダイヤ型・番号表示：最新=オレンジ、過去=ブルー） */}
-                  {sightings.map((s, i) => (
-                    <Marker
-                      key={s.id}
-                      position={{ lat: s.lat, lng: s.lng }}
-                      icon={mkSightingIcon(i + 1, s.id === latestSighting?.id)}
-                      onClick={() => { setTrackerSightingId(s.id); setTrackerAreaId(null); }}
-                    />
-                  ))}
+        {/* UNIFIED MAP SCREEN ─────────────────────────────────────────────── */}
+        {activeTab === 'map' && (
+          <div className="h-full relative">
+            {!isLoaded ? <MapLoading/> : (
+              <GoogleMap
+                mapContainerStyle={{ height: '100%', width: '100%' }}
+                center={mapCenter}
+                zoom={12}
+                options={MAP_OPTIONS}
+                onClick={(e) => handleMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
+              >
+                {/* 失踪地点ピン */}
+                {data.petData?.lostLat && data.petData?.lostLng && (
+                  <Marker
+                    position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
+                    icon={mkLostIcon()}
+                    onClick={() => { setIsLostInfoOpen(true); setSelectedSightingId(null); }}
+                    zIndex={999}
+                  />
+                )}
+                {isLostInfoOpen && data.petData?.lostLat && (
+                  <InfoWindow
+                    position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
+                    onCloseClick={() => setIsLostInfoOpen(false)}
+                  >
+                    <div style={{ fontFamily: 'system-ui', textAlign: 'left', maxWidth: 180 }}>
+                      <p style={{ fontWeight: 700, fontSize: 13, color: '#EF4444', marginBottom: 4 }}>📍 失踪場所</p>
+                      <p style={{ fontSize: 11, color: '#1C1C1E', lineHeight: 1.4 }}>{data.petData.lostLocation}</p>
+                      {data.petData.lostDate && <p style={{ fontSize: 11, color: '#8E8E93', marginTop: 4 }}>🗓 {data.petData.lostDate}</p>}
+                    </div>
+                  </InfoWindow>
+                )}
 
-                  {/* 失踪地点ピン（赤いティアドロップ・常時表示） */}
-                  {data.petData?.lostLat && data.petData?.lostLng && (
-                    <Marker
-                      position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
-                      icon={mkLostIcon()}
-                      onClick={() => { setIsLostInfoOpen(true); setTrackerAreaId(null); setTrackerSightingId(null); }}
-                      zIndex={999}
-                    />
-                  )}
-                  {isLostInfoOpen && data.petData?.lostLat && activeTab === 'tracker' && (
+                {/* 目撃情報ピン（赤ティアドロップ・番号表示） */}
+                {sightings.map((s, i) => (
+                  <Marker
+                    key={s.id}
+                    position={{ lat: s.lat, lng: s.lng }}
+                    icon={mkSightingIcon(i + 1)}
+                    onClick={() => { setSelectedSightingId(s.id); setIsLostInfoOpen(false); setTrackerAreaId(null); }}
+                  />
+                ))}
+                {selectedSightingId !== null && (() => {
+                  const s = sightings.find(x => x.id === selectedSightingId);
+                  const i = sightings.findIndex(x => x.id === selectedSightingId);
+                  if (!s) return null;
+                  return (
                     <InfoWindow
-                      position={{ lat: data.petData.lostLat, lng: data.petData.lostLng }}
-                      onCloseClick={() => setIsLostInfoOpen(false)}
+                      position={{ lat: s.lat, lng: s.lng }}
+                      onCloseClick={() => setSelectedSightingId(null)}
                     >
-                      <div style={{ fontFamily: 'system-ui', textAlign: 'left', maxWidth: 180 }}>
-                        <p style={{ fontWeight: 700, fontSize: 13, color: '#EF4444', marginBottom: 4 }}>📍 失踪場所</p>
-                        <p style={{ fontSize: 11, color: '#1C1C1E', lineHeight: 1.4 }}>{data.petData.lostLocation}</p>
-                        {data.petData.lostDate && <p style={{ fontSize: 11, color: '#8E8E93', marginTop: 4 }}>🗓 {data.petData.lostDate}</p>}
+                      <div style={{ minWidth: 150, fontFamily: 'system-ui', textAlign: 'left' }}>
+                        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>目撃情報 #{i + 1}</p>
+                        {s.time    && <p style={{ fontSize: 11, color: '#64748B', marginBottom: 2 }}>🕐 {fmtDatetime(s.time)}</p>}
+                        {s.address && <p style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>📍 {s.address}</p>}
+                        {s.note    && <p style={{ fontSize: 11, color: '#94A3B8', fontStyle: 'italic', marginBottom: 4 }}>{s.note}</p>}
+                        <button
+                          onClick={() => { setSightings(p => p.filter(x => x.id !== s.id)); setSelectedSightingId(null); }}
+                          style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, width: '100%', textAlign: 'center', background: '#FEF2F2', padding: '4px 0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
+                        >削除</button>
                       </div>
                     </InfoWindow>
-                  )}
+                  );
+                })()}
 
-                  {/* InfoWindow: エリア */}
-                  {trackerAreaId !== null && (() => {
-                    const area = areas.find(a => a.id === trackerAreaId);
-                    if (!area) return null;
-                    return (
-                      <InfoWindow
-                        position={{ lat: area.lat, lng: area.lng }}
-                        onCloseClick={() => setTrackerAreaId(null)}
-                      >
-                        <div style={{ minWidth: 140, fontFamily: 'system-ui', textAlign: 'left' }}>
-                          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{area.name}</p>
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: AREA_STATUS_STYLE[area.status]?.bg || '#94A3B8', color: 'white' }}>{area.status}</span>
-                          {area.note && <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>{area.note}</p>}
-                        </div>
-                      </InfoWindow>
-                    );
-                  })()}
+                {/* 捜索エリアピン（四角・ステータスカラー） */}
+                {areas.filter(a => a.lat && a.lng).map(area => (
+                  <Marker
+                    key={`area-${area.id}`}
+                    position={{ lat: area.lat, lng: area.lng }}
+                    icon={mkAreaIcon(area.status)}
+                    onClick={() => { setTrackerAreaId(area.id); setSelectedSightingId(null); setIsLostInfoOpen(false); }}
+                  />
+                ))}
+                {trackerAreaId !== null && (() => {
+                  const area = areas.find(a => a.id === trackerAreaId);
+                  if (!area) return null;
+                  return (
+                    <InfoWindow
+                      position={{ lat: area.lat, lng: area.lng }}
+                      onCloseClick={() => setTrackerAreaId(null)}
+                    >
+                      <div style={{ minWidth: 140, fontFamily: 'system-ui', textAlign: 'left' }}>
+                        <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{area.name}</p>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: AREA_STATUS_STYLE[area.status]?.bg || '#94A3B8', color: 'white' }}>{area.status}</span>
+                        {area.note && <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>{area.note}</p>}
+                      </div>
+                    </InfoWindow>
+                  );
+                })()}
+              </GoogleMap>
+            )}
 
-                  {/* InfoWindow: 目撃情報 */}
-                  {trackerSightingId !== null && (() => {
-                    const s = sightings.find(x => x.id === trackerSightingId);
-                    const i = sightings.findIndex(x => x.id === trackerSightingId);
-                    if (!s) return null;
-                    return (
-                      <InfoWindow
-                        position={{ lat: s.lat, lng: s.lng }}
-                        onCloseClick={() => setTrackerSightingId(null)}
-                      >
-                        <div style={{ minWidth: 140, fontFamily: 'system-ui', textAlign: 'left' }}>
-                          <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>目撃情報 #{i + 1}</p>
-                          {s.time    && <p style={{ fontSize: 11, color: '#64748B', marginBottom: 2 }}>🕐 {fmtDatetime(s.time)}</p>}
-                          {s.address && <p style={{ fontSize: 11, color: '#475569' }}>📍 {s.address}</p>}
-                        </div>
-                      </InfoWindow>
+            {/* FAB（目撃情報追加） */}
+            <div className="absolute right-4 flex flex-col items-end gap-3" style={{ zIndex: 10, bottom: sheetExpanded ? 'calc(50vh + 140px)' : '160px' , transition: 'bottom 0.3s ease' }}>
+              {isMapMenuOpen && (
+                <div className="flex flex-col items-end gap-3 mb-2">
+                  <button onClick={() => { setIsSightingOpen(true); setIsMapMenuOpen(false); }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
+                    <Plus className="w-5 h-5 text-[#73351F]"/> 目撃情報を追加
+                  </button>
+                  <button onClick={() => {
+                    setIsMapMenuOpen(false);
+                    const lines = sightings.map(s =>
+                      `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
                     );
-                  })()}
-                </GoogleMap>
+                    const text = lines.length > 0
+                      ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
+                      : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
+                    if (navigator.share) {
+                      navigator.share({ title: `${petData.name}の目撃情報`, text });
+                    } else {
+                      navigator.clipboard?.writeText(text);
+                      alert('目撃情報をコピーしました');
+                    }
+                  }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
+                    <Share2 className="w-5 h-5 text-[#73351F]"/> 目撃情報を共有
+                  </button>
+                </div>
               )}
-
-              {/* Progress overlay */}
-              <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl px-4 py-3 flex items-center gap-3" style={{ zIndex: 10 }}>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-semibold text-[#8E8E93]">捜索進捗</span>
-                    <span className="text-sm font-bold text-[#73351F]">{progress}%</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#F2D3AC]/400 rounded-full transition-all duration-700" style={{ width: `${progress}%` }}/>
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[11px] font-medium text-[#8E8E93] leading-tight">{confirmedCount}/{areas.length} エリア</p>
-                  <p className="text-[11px] font-medium text-[#8E8E93] leading-tight">目撃 {sightings.length}件</p>
-                </div>
-              </div>
+              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#D97757] text-white'}`}>
+                {isMapMenuOpen ? <X className="w-8 h-8"/> : <Plus className="w-8 h-8"/>}
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto pb-24">
-              {areas.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="text-5xl mb-3">🗺️</div>
-                  <p className="font-semibold text-[#8E8E93]">捜索エリアがありません</p>
-                  <p className="text-sm text-[#8E8E93] mt-1">下のボタンでエリアを追加してください</p>
-                </div>
-              ) : areas.map(area => (
-                <div key={area.id} onClick={() => { setSelectedArea(area); setIsTrackerMenuOpen(true); }} className={`flex items-center gap-3 px-4 py-3.5 bg-white active:bg-[#F2F2F7] cursor-pointer transition-colors ${areas.indexOf(area) > 0 ? 'border-t border-[#C6C6C8]/40' : ''}`}>
-                  <div className="flex items-center gap-4">
-                    {<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-base font-bold" style={{background: AREA_STATUS_STYLE[area.status]?.bg || '#94A3B8'}}>{AREA_STATUS_STYLE[area.status]?.symbol || '–'}</div>}
-                    <div>
-                      <p className="font-semibold text-[#1C1C1E] text-[17px] leading-tight">{area.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[12px] font-medium text-[#8E8E93]">{area.status}</span>
-                        <span className="text-[11px] font-medium text-[#8E8E93]">{area.time}</span>
-                      </div>
-                      {area.note && <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{area.note}</p>}
-                    </div>
+            {/* ── Bottom Sheet + Nav ── */}
+            <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 20 }}>
+              {/* Bottom Sheet */}
+              <div className="bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)]" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+                {/* Sheet handle */}
+                <button
+                  onClick={() => setSheetExpanded(v => !v)}
+                  className="w-full flex items-center justify-between px-5 py-3.5 active:bg-[#F9F9F9] transition-colors"
+                >
+                  <span className="font-bold text-[17px] text-[#1A2E2D]">
+                    {mapSubTab === 'sightings' ? '目撃情報' : '捜索ポイント'}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">
+                      {mapSubTab === 'sightings' ? sightings.length : areas.length}
+                    </span>
+                    {sheetExpanded ? <ChevronDown className="w-5 h-5 text-[#8E8E93]"/> : <ChevronUp className="w-5 h-5 text-[#8E8E93]"/>}
                   </div>
-                  <ChevronRight className="w-5 h-5 text-[#C6C6C8] shrink-0 ml-auto"/>
+                </button>
+
+                {/* Sheet content */}
+                <div
+                  className="overflow-y-auto border-t border-[#ECE2CE] transition-all duration-300 ease-in-out"
+                  style={{ maxHeight: sheetExpanded ? '50vh' : '0px', opacity: sheetExpanded ? 1 : 0 }}
+                >
+                  {mapSubTab === 'sightings' ? (
+                    /* ─── Sightings list ─── */
+                    sightings.length === 0 ? (
+                      <div className="text-center py-10">
+                        <p className="font-semibold text-[#8E8E93]">目撃情報なし</p>
+                        <p className="text-sm text-[#8E8E93] mt-1">マップをタップしてピンを追加</p>
+                      </div>
+                    ) : (
+                      sightings.map((s, i) => (
+                        <div
+                          key={s.id}
+                          onClick={() => { setSelectedSightingId(s.id); setSheetExpanded(false); }}
+                          className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}
+                        >
+                          <div className="w-8 h-8 bg-[#ED1C24] rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold">{i + 1}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight truncate">{s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {s.time && <span className="text-[12px] text-[#8E8E93]">{fmtDatetime(s.time)}</span>}
+                              {s.note && <span className="text-[12px] text-[#8E8E93] truncate">— {s.note}</span>}
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-[#C6C6C8] shrink-0"/>
+                        </div>
+                      ))
+                    )
+                  ) : (
+                    /* ─── Areas list ─── */
+                    <>
+                      {/* Progress bar */}
+                      <div className="px-5 py-3 bg-[#F9F9F9] border-b border-[#ECE2CE]/60">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[11px] font-semibold text-[#8E8E93]">捜索進捗</span>
+                          <span className="text-sm font-bold text-[#73351F]">{progress}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-[#22807F] rounded-full transition-all duration-700" style={{ width: `${progress}%` }}/>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-[11px] text-[#8E8E93]">{confirmedCount}/{areas.length} エリア</span>
+                          <span className="text-[11px] text-[#8E8E93]">目撃 {sightings.length}件</span>
+                        </div>
+                      </div>
+                      {areas.length === 0 ? (
+                        <div className="text-center py-10">
+                          <p className="font-semibold text-[#8E8E93]">捜索エリアがありません</p>
+                          <p className="text-sm text-[#8E8E93] mt-1">下のボタンでエリアを追加</p>
+                        </div>
+                      ) : areas.map((area, idx) => (
+                        <div key={area.id} onClick={() => { setSelectedArea(area); setIsTrackerMenuOpen(true); }} className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${idx > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}>
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold" style={{background: AREA_STATUS_STYLE[area.status]?.bg || '#94A3B8'}}>{AREA_STATUS_STYLE[area.status]?.symbol || '–'}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight">{area.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[12px] font-medium text-[#8E8E93]">{area.status}</span>
+                              <span className="text-[11px] text-[#8E8E93]">{area.time}</span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-[#C6C6C8] shrink-0"/>
+                        </div>
+                      ))}
+                      <button onClick={() => setIsAddAreaOpen(true)} className="mx-5 my-3 bg-white text-[#73351F] py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-[#73351F]/30 active:scale-95 transition-all w-[calc(100%-40px)]">
+                        <Plus className="w-5 h-5"/> エリアを追加
+                      </button>
+                    </>
+                  )}
                 </div>
-              ))}
-              <button onClick={() => setIsAddAreaOpen(true)} className="mx-4 my-3 bg-white text-[#73351F] py-3.5 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-[#73351F]/30 active:scale-95 transition-all w-[calc(100%-32px)]">
-                <Plus className="w-5 h-5"/> エリアを追加
-              </button>
+              </div>
+
+              {/* ── Bottom Nav (2 tabs) ── */}
+              <nav className="bg-[#E6D6B5] flex items-center justify-around px-2 shrink-0" style={{paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', paddingTop: '8px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
+                {[
+                  { id: 'sightings', icon: CircleAlert, label: '目撃情報' },
+                  { id: 'areas',     icon: Crosshair,   label: '捜索ポイント' },
+                ].map(({ id, icon: Icon, label }) => (
+                  <button key={id} onClick={() => { setMapSubTab(id); if (mapSubTab !== id) setSheetExpanded(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${mapSubTab === id ? 'text-[#22807F]' : 'text-[#1A2E2D]/40 active:opacity-70'}`}>
+                    <div className={`rounded-full p-1.5 transition-all ${mapSubTab === id ? 'bg-[#22807F]/10' : ''}`}>
+                      <Icon className="w-5 h-5 stroke-[2px]"/>
+                    </div>
+                    <span className={`text-[10px] leading-none ${mapSubTab === id ? 'font-bold' : 'font-medium'}`} style={{ letterSpacing: '0.26px' }}>{label}</span>
+                  </button>
+                ))}
+              </nav>
             </div>
           </div>
         )}
-      </div>
 
-      {/* ══ BOTTOM NAV ═══════════════════════════════════════════════════════ */}
-      <nav className="bg-[#E6D6B5] border-t border-[#ECE2CE] flex items-center justify-around px-2 z-30 shrink-0" style={{paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', paddingTop: '8px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
-        {[
-          { id: 'map',     icon: MapIcon,  label: '目撃情報' },
-          { id: 'flyer',   icon: FileText, label: '捜索ポスター' },
-          { id: 'tracker', icon: Target,   label: '捜索進捗' },
-        ].map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => { setActiveTab(id); setIsMapMenuOpen(false); setIsSaveMenuOpen(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${activeTab === id ? 'text-[#22807F]' : 'text-[#1A2E2D]/40 active:opacity-70'}`}>
-            <div className={`rounded-full p-1.5 transition-all ${activeTab === id ? 'bg-[#22807F]/10' : ''}`}>
-              <Icon className="w-5 h-5 stroke-[2px]"/>
-            </div>
-            <span className={`text-[10px] leading-none ${activeTab === id ? 'font-bold' : 'font-medium'}`} style={{ letterSpacing: '0.26px' }}>{label}</span>
-          </button>
-        ))}
-      </nav>
+
+      </div>
 
       {/* ══ MODALS ═══════════════════════════════════════════════════════════ */}
       <FlyerEditModal   isOpen={isEditOpen}    onClose={() => setIsEditOpen(false)}    petData={petData} setPetData={setPetData} onMapOpen={handleEditMapOpen}/>
