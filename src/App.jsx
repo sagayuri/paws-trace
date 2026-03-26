@@ -1638,7 +1638,7 @@ export default function App() {
                   </button>
                 </div>
               )}
-              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#73351F] text-white'}`}>
+              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#D97757] text-white'}`}>
                 {isMapMenuOpen ? <X className="w-8 h-8"/> : <Plus className="w-8 h-8"/>}
               </button>
             </div>
@@ -1653,10 +1653,10 @@ export default function App() {
             </div>
             <div className="px-6 pb-12 space-y-4">
               <button onClick={() => setIsEditOpen(true)} className="w-full bg-white border border-[#C6C6C8]/50 text-[#1C1C1E] py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all">
-                情報を編集 <ChevronRight className="w-5 h-5 text-slate-400"/>
+                情報を編集
               </button>
               <div className="relative">
-                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#73351F] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
+                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#D97757] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
                   画像を保存
                 </button>
                 {isSaveMenuOpen && (
