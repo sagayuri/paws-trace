@@ -1717,27 +1717,27 @@ export default function App() {
             {/* ── Bottom Sheet + Nav ── */}
             <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 20 }}>
               {/* Bottom Sheet */}
-              <div className="bg-white rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)]" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
-                {/* Sheet handle */}
+              <div className="shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ background: '#EEE1C6', borderRadius: '24px 24px 0 0', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+                {/* Sheet handle — h:56px, padding:16px */}
                 <button
                   onClick={() => setSheetExpanded(v => !v)}
-                  className="w-full flex items-center justify-between px-5 py-3.5 active:bg-[#F9F9F9] transition-colors"
+                  className="w-full flex items-center justify-between active:opacity-80 transition-opacity"
+                  style={{ height: '56px', padding: '0 16px' }}
                 >
-                  <span className="font-bold text-[17px] text-[#1A2E2D]">
+                  <span className="font-bold text-[#1A2E2D]" style={{ fontSize: '16px', lineHeight: '20.8px', letterSpacing: '0.32px' }}>
                     {mapSubTab === 'sightings' ? '目撃情報' : '捜索ポイント'}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">
                       {mapSubTab === 'sightings' ? sightings.length : areas.length}
                     </span>
-                    {sheetExpanded ? <ChevronDown className="w-5 h-5 text-[#8E8E93]"/> : <ChevronUp className="w-5 h-5 text-[#8E8E93]"/>}
                   </div>
                 </button>
 
                 {/* Sheet content */}
                 <div
-                  className="overflow-y-auto border-t border-[#ECE2CE] transition-all duration-300 ease-in-out"
-                  style={{ maxHeight: sheetExpanded ? '50vh' : '0px', opacity: sheetExpanded ? 1 : 0 }}
+                  className="overflow-y-auto transition-all duration-300 ease-in-out"
+                  style={{ maxHeight: sheetExpanded ? '50vh' : '0px', opacity: sheetExpanded ? 1 : 0, borderTop: sheetExpanded ? '1px solid #E6D6B5' : 'none' }}
                 >
                   {mapSubTab === 'sightings' ? (
                     /* ─── Sightings list ─── */
@@ -1808,8 +1808,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── Bottom Nav (2 tabs) ── */}
-              <nav className="bg-[#E6D6B5] flex items-center justify-around px-2 shrink-0" style={{paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', paddingTop: '8px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
+              {/* ── Bottom Nav (2 tabs) — h:78px ── */}
+              <nav className="bg-[#E6D6B5] flex items-center justify-around shrink-0" style={{ height: '78px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
                 {[
                   { id: 'sightings', icon: CircleAlert, label: '目撃情報' },
                   { id: 'areas',     icon: Crosshair,   label: '捜索ポイント' },
