@@ -12,7 +12,7 @@ export const colors = {
   brand: {
     teal:      '#22807F', // Primary / icon / logo stroke
     dark:      '#1A2E2D', // Body text / headings
-    cta:       '#D97757', // CTA button (orange-salmon)
+    cta:       '#22807F', // CTA button (teal — was #D97757)
     sand:      '#E6D6B5', // Hero background (beige)
     sandMid:   '#ECE2CE', // Card lines / dividers
     cream:     '#FCF1D8', // Poster icon background

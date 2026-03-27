@@ -92,7 +92,7 @@ const PIN_DOT      = 'M14.184 32.871C14.369 32.087 13.883 31.3 13.099 31.115C12.
 
 // 失踪場所ピン — 赤いティアドロップ（大きめ・「失」表示）Figma準拠
 function mkLostIcon() {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#ED1C24"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#ED1C24"/><text x="12.76" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="#ED1C24" font-family="sans-serif">\u5931</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#D97757"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#D97757"/><text x="12.76" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="#D97757" font-family="sans-serif">\u5931</text></svg>`;
   return {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
     scaledSize: new window.google.maps.Size(36, 48),
@@ -102,7 +102,7 @@ function mkLostIcon() {
 
 // 目撃情報ピン — 赤いティアドロップ・番号表示（1-10）Figma node 25-605 完全準拠
 function mkSightingIcon(num) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#ED1C24"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#ED1C24"/><text x="12.76" y="${num >= 10 ? '15' : '16'}" text-anchor="middle" font-size="${num >= 10 ? '9' : '11'}" font-weight="900" fill="#ED1C24" font-family="sans-serif">${num}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#D97757"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#D97757"/><text x="12.76" y="${num >= 10 ? '15' : '16'}" text-anchor="middle" font-size="${num >= 10 ? '9' : '11'}" font-weight="900" fill="#D97757" font-family="sans-serif">${num}</text></svg>`;
   return {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
     scaledSize: new window.google.maps.Size(30, 40),
@@ -191,7 +191,7 @@ const formatFlyerDate = (dateStr) => {
 const FlyerPreview = ({ petData }) => (
   <div className="w-full aspect-[210/297] bg-[#E6D6B5] flex flex-col overflow-hidden" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
     {/* Header banner */}
-    <div className="bg-[#D97757] py-3 px-4 text-center">
+    <div className="bg-[#22807F] py-3 px-4 text-center">
       <h1 className="text-[28px] font-black text-white tracking-[4px]">{petData.type || '犬'}を探しています</h1>
     </div>
 
@@ -252,7 +252,7 @@ const FlyerPreview = ({ petData }) => (
     </div>
 
     {/* Contact footer */}
-    <div className="bg-[#D97757] py-2.5 px-3 flex items-center gap-2">
+    <div className="bg-[#22807F] py-2.5 px-3 flex items-center gap-2">
       <span className="text-[12px] font-bold text-white whitespace-nowrap">連絡先</span>
       <div className="flex-1">
         <div className="text-[16px] font-black text-white tracking-wide">{petData.contact || 'XXX-XXXX-XXXX'}</div>
@@ -619,7 +619,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
             </div>
           </div>
 
-          {/* CTA ボタン — Figma: rx=8, fill=#D97757, 56px tall */}
+          {/* CTA ボタン — Figma: rx=8, fill=#22807F, 56px tall */}
           <button
             onClick={() => setStep('form')}
             style={{
@@ -814,7 +814,7 @@ const DatePickerField = ({ label, value, onChange }) => {
           {/* Weekday headers */}
           <div className="grid grid-cols-7 px-3 pt-2">
             {WEEKDAY_JP.map((d, i) => (
-              <div key={d} className={`text-center text-[11px] font-bold py-1 ${i === 0 ? 'text-[#D97757]' : i === 6 ? 'text-[#22807F]' : 'text-[#1A2E2D]/50'}`}>{d}</div>
+              <div key={d} className={`text-center text-[11px] font-bold py-1 ${i === 0 ? 'text-[#22807F]' : i === 6 ? 'text-[#22807F]' : 'text-[#1A2E2D]/50'}`}>{d}</div>
             ))}
           </div>
           {/* Days grid */}
@@ -839,7 +839,7 @@ const DatePickerField = ({ label, value, onChange }) => {
           </div>
           {/* Footer */}
           <div className="border-t border-[#ECE2CE] px-4 py-2 flex justify-between">
-            <button type="button" onClick={() => { onChange(''); setOpen(false); }} className="text-[12px] font-bold text-[#D97757]">クリア</button>
+            <button type="button" onClick={() => { onChange(''); setOpen(false); }} className="text-[12px] font-bold text-[#22807F]">クリア</button>
             <button type="button" onClick={() => selectDay(today.getDate())} className="text-[12px] font-bold text-[#22807F]"
               style={{ display: viewYear === today.getFullYear() && viewMonth === today.getMonth() ? '' : 'none' }}
             >今日</button>
@@ -942,14 +942,14 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData, variant = 'modal
     <div className="col-span-2">
       <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">失踪場所</label>
       {localData.lostLocation ? (
-        <div className="flex items-center gap-2.5 p-3 bg-[#D97757]/5 border-[1.5px] border-[#D97757]/20 rounded-xl">
-          <MapPin className="w-4 h-4 text-[#D97757] shrink-0"/>
+        <div className="flex items-center gap-2.5 p-3 bg-[#22807F]/5 border-[1.5px] border-[#22807F]/20 rounded-xl">
+          <MapPin className="w-4 h-4 text-[#22807F] shrink-0"/>
           <span className="flex-1 text-[13px] font-medium text-[#1C1C1E] leading-relaxed">{localData.lostLocation}</span>
           <button type="button" onClick={handleMapOpenClick} className="text-[11px] font-bold text-[#22807F] bg-transparent border-none cursor-pointer shrink-0">変更</button>
         </div>
       ) : (
         <button type="button" onClick={handleMapOpenClick} className="w-full p-3 bg-[#F2F2F7] rounded-xl font-medium text-left text-[#C6C6C8] flex items-center gap-2 border-none cursor-pointer">
-          <MapPin className="w-4 h-4 text-[#D97757] shrink-0"/>
+          <MapPin className="w-4 h-4 text-[#22807F] shrink-0"/>
           <span>地図を開いて場所を選択</span>
         </button>
       )}
@@ -1030,9 +1030,9 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData, variant = 'modal
           {/* Footer CTA */}
           <div className="bg-white border-t border-[#ECE2CE] pt-3 px-5 flex-shrink-0" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom, 12px))' }}>
             {!canSave && (
-              <p className="text-[12px] font-semibold text-[#D97757] text-center mb-2">お名前を入力してください</p>
+              <p className="text-[12px] font-semibold text-[#22807F] text-center mb-2">お名前を入力してください</p>
             )}
-            <button onClick={handleSave} disabled={!canSave || submitting} className="w-full bg-[#D97757] disabled:opacity-40 text-white py-4 rounded-2xl font-bold text-[15px] active:scale-[0.98] transition-all shadow-sm">
+            <button onClick={handleSave} disabled={!canSave || submitting} className="w-full bg-[#22807F] disabled:opacity-40 text-white py-4 rounded-2xl font-bold text-[15px] active:scale-[0.98] transition-all shadow-sm">
               {submitting ? '登録中…' : '登録し捜索を始める'}
             </button>
           </div>
@@ -1055,7 +1055,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData, variant = 'modal
           {formBody}
         </div>
         <div className="px-5 py-4 border-t border-[#ECE2CE]">
-          <button onClick={handleSave} className="w-full bg-[#D97757] text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">変更を保存</button>
+          <button onClick={handleSave} className="w-full bg-[#22807F] text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">変更を保存</button>
         </div>
       </div>
     </div>
@@ -1555,7 +1555,7 @@ export default function App() {
               <span className="font-bold text-[17px] text-[#1A2E2D] flex-1">迷子情報</span>
               <button
                 onClick={() => setShowEndConfirm(true)}
-                className="shrink-0 text-[12px] font-bold text-[#D97757] px-3 py-1.5 rounded-full border border-[#D97757]/40 bg-white/80 active:opacity-60 transition-opacity"
+                className="shrink-0 text-[12px] font-bold text-[#22807F] px-3 py-1.5 rounded-full border border-[#22807F]/40 bg-white/80 active:opacity-60 transition-opacity"
               >
                 捜索終了
               </button>
@@ -1568,7 +1568,7 @@ export default function App() {
                 情報を編集
               </button>
               <div className="relative">
-                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#D97757] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
+                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#22807F] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
                   画像を保存
                 </button>
                 {isSaveMenuOpen && (
@@ -1753,7 +1753,7 @@ export default function App() {
                           onClick={() => { setSelectedSightingId(s.id); setSheetExpanded(false); }}
                           className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}
                         >
-                          <div className="w-8 h-8 bg-[#ED1C24] rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold">{i + 1}</div>
+                          <div className="w-8 h-8 bg-[#D97757] rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold">{i + 1}</div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight truncate">{s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}</p>
                             <div className="flex items-center gap-2 mt-0.5">
@@ -1808,19 +1808,25 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ── Bottom Nav (2 tabs) — h:78px ── */}
-              <nav className="bg-[#E6D6B5] flex items-center justify-around shrink-0" style={{ height: '78px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
+              {/* ── Bottom Nav (2 tabs) — h:78px, Figma node 25-654 ── */}
+              <nav className="bg-[#E6D6B5] flex items-center shrink-0 px-4 gap-2" style={{ height: '78px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif'}}>
                 {[
                   { id: 'sightings', icon: CircleAlert, label: '目撃情報' },
                   { id: 'areas',     icon: Crosshair,   label: '捜索ポイント' },
-                ].map(({ id, icon: Icon, label }) => (
-                  <button key={id} onClick={() => { setMapSubTab(id); if (mapSubTab !== id) setSheetExpanded(false); }} className={`flex flex-col items-center gap-1 flex-1 py-2 transition-all ${mapSubTab === id ? 'text-[#22807F]' : 'text-[#1A2E2D]/40 active:opacity-70'}`}>
-                    <div className={`rounded-full p-1.5 transition-all ${mapSubTab === id ? 'bg-[#22807F]/10' : ''}`}>
+                ].map(({ id, icon: Icon, label }) => {
+                  const isActive = mapSubTab === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => { setMapSubTab(id); if (mapSubTab !== id) setSheetExpanded(false); }}
+                      className={`flex flex-col items-center justify-center gap-1 flex-1 transition-all active:opacity-80 ${isActive ? 'bg-white rounded-2xl text-[#22807F]' : 'text-[#1A2E2D]'}`}
+                      style={{ height: '56px' }}
+                    >
                       <Icon className="w-5 h-5 stroke-[2px]"/>
-                    </div>
-                    <span className={`text-[10px] leading-none ${mapSubTab === id ? 'font-bold' : 'font-medium'}`} style={{ letterSpacing: '0.26px' }}>{label}</span>
-                  </button>
-                ))}
+                      <span className={`text-[11px] leading-none ${isActive ? 'font-bold' : 'font-medium'}`} style={{ letterSpacing: '0.26px' }}>{label}</span>
+                    </button>
+                  );
+                })}
               </nav>
             </div>
           </div>
@@ -1837,7 +1843,7 @@ export default function App() {
         <div className="fixed inset-0 z-[250] overflow-hidden bg-slate-100" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
           {!isLoaded ? (
             <div className="w-full h-full flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-[#D97757] border-t-transparent rounded-full animate-spin"/>
+              <div className="w-8 h-8 border-2 border-[#22807F] border-t-transparent rounded-full animate-spin"/>
             </div>
           ) : (
             <GoogleMap
@@ -1871,7 +1877,7 @@ export default function App() {
                 onChange={e => setEditMapSearchQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleEditMapSearch()}
               />
-              <button onClick={handleEditMapSearch} className="text-[#D97757] shrink-0 p-1">
+              <button onClick={handleEditMapSearch} className="text-[#22807F] shrink-0 p-1">
                 <MapPin className="w-5 h-5"/>
               </button>
             </div>
@@ -1893,7 +1899,7 @@ export default function App() {
               <button
                 onClick={handleEditMapConfirm}
                 disabled={editMapGeocoding}
-                className="w-full bg-[#D97757] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
+                className="w-full bg-[#22807F] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
               >
                 この場所を選択
               </button>
