@@ -101,12 +101,13 @@ function mkLostIcon() {
 }
 
 // 目撃情報ピン — 赤いティアドロップ・番号表示（1-10）Figma node 25-605 完全準拠
-function mkSightingIcon(num) {
+function mkSightingIcon(num, expanded = false) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#D97757"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#D97757"/><text x="12.76" y="${num >= 10 ? '15' : '16'}" text-anchor="middle" font-size="${num >= 10 ? '9' : '11'}" font-weight="900" fill="#D97757" font-family="sans-serif">${num}</text></svg>`;
+  const s = expanded ? 1.2 : 1;
   return {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-    scaledSize: new window.google.maps.Size(30, 40),
-    anchor: new window.google.maps.Point(15, 36),
+    scaledSize: new window.google.maps.Size(30 * s, 40 * s),
+    anchor: new window.google.maps.Point(15 * s, 36 * s),
   };
 }
 
@@ -120,15 +121,16 @@ function mkTapIcon() {
   };
 }
 
-function mkAreaIcon(status, num) {
+function mkAreaIcon(status, num, expanded = false) {
   const { symbol } = AREA_STATUS_STYLE[status] || AREA_STATUS_STYLE['未着手'];
   const label = num != null ? num : symbol;
   const AREA_COLOR = '#406D1F';
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="${AREA_COLOR}"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="${AREA_COLOR}"/><text x="12.76" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="${AREA_COLOR}" font-family="sans-serif">${label}</text></svg>`;
+  const s = expanded ? 1.2 : 1;
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(30, 40),
-    anchor: new window.google.maps.Point(15, 36),
+    scaledSize: new window.google.maps.Size(30 * s, 40 * s),
+    anchor: new window.google.maps.Point(15 * s, 36 * s),
   };
 }
 
@@ -200,7 +202,7 @@ const formatFlyerDate = (dateStr) => {
 const FlyerPreview = ({ petData }) => (
   <div className="w-full aspect-[210/297] bg-[#E6D6B5] flex flex-col overflow-hidden" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
     {/* Header banner */}
-    <div className="bg-[#22807F] py-3 px-4 text-center">
+    <div className="bg-[#D97757] py-3 px-4 text-center">
       <h1 className="text-[28px] font-black text-white tracking-[4px]">{petData.type || '犬'}を探しています</h1>
     </div>
 
@@ -234,7 +236,7 @@ const FlyerPreview = ({ petData }) => (
 
       {/* Info heading */}
       <div className="px-3 pt-1.5">
-        <div className="text-[12px] font-bold text-[#22807F] border-b-2 border-[#22807F]/50 pb-0.5 mb-1.5">情報</div>
+        <div className="text-[12px] font-bold text-[#D97757] border-b-2 border-[#D97757]/50 pb-0.5 mb-1.5">情報</div>
       </div>
 
       {/* Info grid + features side by side */}
@@ -253,7 +255,7 @@ const FlyerPreview = ({ petData }) => (
         {/* Right: features / circumstances */}
         <div>
           <div className="text-[9px] font-bold text-[#1A2E2D] mb-0.5">特徴・いなくなった経緯</div>
-          <div className="border border-[#22807F] rounded px-1.5 py-1 text-[8px] text-[#1A2E2D] leading-relaxed min-h-[60px] whitespace-pre-wrap">
+          <div className="border border-[#D97757] rounded px-1.5 py-1 text-[8px] text-[#1A2E2D] leading-relaxed min-h-[60px] whitespace-pre-wrap">
             {[petData.features, petData.memo].filter(Boolean).join('\n') || ''}
           </div>
         </div>
@@ -261,7 +263,7 @@ const FlyerPreview = ({ petData }) => (
     </div>
 
     {/* Contact footer */}
-    <div className="bg-[#22807F] py-2.5 px-3 flex items-center gap-2">
+    <div className="bg-[#D97757] py-2.5 px-3 flex items-center gap-2">
       <span className="text-[12px] font-bold text-white whitespace-nowrap">連絡先</span>
       <div className="flex-1">
         <div className="text-[16px] font-black text-white tracking-wide">{petData.contact || 'XXX-XXXX-XXXX'}</div>
@@ -702,7 +704,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
 
           {/* 検索バー */}
           <div className="absolute top-12 left-16 right-4 z-10">
-            <div className="bg-white rounded-2xl shadow-md flex items-center px-3 gap-2">
+            <div className="bg-white rounded-xl shadow-md flex items-center px-3 gap-2">
               <input
                 type="text"
                 placeholder="場所を検索…"
@@ -739,7 +741,7 @@ const OnboardingScreen = ({ onComplete, isLoaded }) => {
                   setStep('form');
                 }}
                 disabled={isGeocoding}
-                className="w-full bg-brand-cta disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
+                className="w-full bg-brand-cta disabled:opacity-40 text-white py-3.5 rounded-xl font-bold text-[15px] active:scale-95 transition-all"
               >
                 この場所を選択
               </button>
@@ -809,7 +811,7 @@ const DatePickerField = ({ label, value, onChange }) => {
 
       {open && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-xl border border-[#ECE2CE] overflow-hidden w-[320px]" onClick={e => e.stopPropagation()} style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", sans-serif' }}>
+          <div className="bg-white rounded-xl shadow-xl border border-[#ECE2CE] overflow-hidden w-[320px]" onClick={e => e.stopPropagation()} style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", sans-serif' }}>
           {/* Header */}
           <div className="bg-[#E6D6B5] px-4 py-3 flex items-center justify-between">
             <button type="button" onClick={prevMonth} className="p-1 rounded-full hover:bg-white/30 transition-colors">
@@ -973,7 +975,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData, variant = 'modal
         <div className="grid grid-cols-2 gap-3">
           {localData.images.slice(0, 2).map((img, i) => (
             <div key={i} className="relative">
-              <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-[#22807F]' : 'border-[#ECE2CE] bg-[#FCF1D8]/50 hover:bg-[#E6D6B5]/30'}`}>
+              <div onClick={() => fileRefs[i].current.click()} className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all ${img ? 'border-[#22807F]' : 'border-[#ECE2CE] bg-[#FCF1D8]/50 hover:bg-[#E6D6B5]/30'}`}>
                 {img ? <img src={img} className="w-full h-full object-cover" alt=""/> : <Camera className="w-6 h-6 text-[#22807F]/40"/>}
                 <input type="file" ref={fileRefs[i]} onChange={e => handleImage(i, e)} className="hidden" accept="image/*"/>
               </div>
@@ -1041,7 +1043,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData, variant = 'modal
             {!canSave && (
               <p className="text-[12px] font-semibold text-[#22807F] text-center mb-2">お名前を入力してください</p>
             )}
-            <button onClick={handleSave} disabled={!canSave || submitting} className="w-full bg-[#22807F] disabled:opacity-40 text-white py-4 rounded-2xl font-bold text-[15px] active:scale-[0.98] transition-all shadow-sm">
+            <button onClick={handleSave} disabled={!canSave || submitting} className="w-full bg-[#22807F] disabled:opacity-40 text-white py-4 rounded-xl font-bold text-[15px] active:scale-[0.98] transition-all shadow-sm">
               {submitting ? '登録中…' : '登録し捜索を始める'}
             </button>
           </div>
@@ -1064,7 +1066,7 @@ const FlyerEditModal = ({ isOpen, onClose, petData, setPetData, variant = 'modal
           {formBody}
         </div>
         <div className="px-5 py-4 border-t border-[#ECE2CE]">
-          <button onClick={handleSave} className="w-full bg-[#22807F] text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">変更を保存</button>
+          <button onClick={handleSave} className="w-full bg-[#22807F] text-white py-4 rounded-xl font-bold shadow-sm active:scale-[0.98] transition-all">変更を保存</button>
         </div>
       </div>
     </div>
@@ -1160,8 +1162,8 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
             <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">写真</label>
             <div className="flex gap-2 flex-wrap">
               {form.images.map((src, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#ECE2CE] shrink-0">
-                  <img src={src} alt="" className="w-full h-full object-cover"/>
+                <div key={i} className="relative rounded-xl overflow-hidden border border-[#ECE2CE] shrink-0">
+                  <img src={src} alt="" className="max-h-[120px] object-contain"/>
                   <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
                     <X className="w-3 h-3 text-white"/>
                   </button>
@@ -1184,7 +1186,7 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
         </div>
         {/* Footer CTA — matches FlyerEditModal */}
         <div className="px-5 py-4 border-t border-[#ECE2CE] shrink-0">
-          <button onClick={() => onSave(form)} className="w-full bg-[#D97757] text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">登録</button>
+          <button onClick={() => onSave(form)} className="w-full bg-[#D97757] text-white py-4 rounded-xl font-bold shadow-sm active:scale-[0.98] transition-all">登録</button>
         </div>
       </div>
     </div>
@@ -1240,8 +1242,8 @@ const AreaDetailModal = ({ area, isOpen, onClose, onUpdate, onDelete }) => {
           </div>
         </div>
         <div className="px-5 py-4 border-t border-[#C6C6C8]/40 flex gap-3">
-          <button onClick={() => onDelete(area.id)} className="px-5 py-4 rounded-2xl font-semibold text-[#FF3B30] bg-[#FFF2F1] active:scale-95 transition-all">削除</button>
-          <button onClick={() => onUpdate(area.id, { name, status, note })} className="flex-1 bg-[#73351F] text-white py-4 rounded-2xl font-semibold shadow-sm">変更を保存</button>
+          <button onClick={() => onDelete(area.id)} className="px-5 py-4 rounded-xl font-semibold text-[#FF3B30] bg-[#FFF2F1] active:scale-95 transition-all">削除</button>
+          <button onClick={() => onUpdate(area.id, { name, status, note })} className="flex-1 bg-[#73351F] text-white py-4 rounded-xl font-semibold shadow-sm">変更を保存</button>
         </div>
       </div>
     </div>
@@ -1284,7 +1286,7 @@ const AddAreaModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAddres
         </div>
         {/* Footer CTA */}
         <div className="px-5 py-4 border-t border-[#ECE2CE] shrink-0">
-          <button onClick={() => { if (name.trim()) onSave({ name, note }); }} disabled={!name.trim()} className="w-full bg-[#D97757] disabled:opacity-40 text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">追加する</button>
+          <button onClick={() => { if (name.trim()) onSave({ name, note }); }} disabled={!name.trim()} className="w-full bg-[#D97757] disabled:opacity-40 text-white py-4 rounded-xl font-bold shadow-sm active:scale-[0.98] transition-all">追加する</button>
         </div>
       </div>
     </div>
@@ -1338,6 +1340,8 @@ export default function App() {
 
   // Tracker state
   const [expandedAreaId, setExpandedAreaId]         = useState(null);
+  const [expandedSightingId, setExpandedSightingId] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId]       = useState(null); // { type: 'sighting'|'area', id }
   const [isDetailOpen, setIsDetailOpen]             = useState(false);
   const [isAddAreaOpen, setIsAddAreaOpen]           = useState(false);
   const [selectedArea, setSelectedArea]             = useState(null);
@@ -1594,15 +1598,15 @@ export default function App() {
               <div ref={flyerRef}><FlyerPreview petData={petData}/></div>
             </div>
             <div className="px-6 pb-12 space-y-4">
-              <button onClick={() => setIsEditOpen(true)} className="w-full bg-white border border-[#C6C6C8]/50 text-[#1C1C1E] py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all">
+              <button onClick={() => setIsEditOpen(true)} className="w-full bg-white border border-[#C6C6C8]/50 text-[#1C1C1E] py-4 rounded-xl font-semibold text-base flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all">
                 情報を編集
               </button>
               <div className="relative">
-                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#22807F] text-white py-4 rounded-2xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
+                <button onClick={() => setIsSaveMenuOpen(v => !v)} className="w-full bg-[#D97757] text-white py-4 rounded-xl font-semibold text-base flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all">
                   画像を保存
                 </button>
                 {isSaveMenuOpen && (
-                  <div className="absolute bottom-full left-0 right-0 mb-3 bg-white rounded-2xl shadow-lg border border-[#C6C6C8]/40 overflow-hidden z-50">
+                  <div className="absolute bottom-full left-0 right-0 mb-3 bg-white rounded-xl shadow-lg border border-[#C6C6C8]/40 overflow-hidden z-50">
                     <button onClick={handleExport} className="w-full p-4 text-left flex items-center justify-between active:bg-[#F2F2F7] border-b border-[#C6C6C8]/40">
                       <div className="flex items-center gap-3"><ImageIcon className="w-6 h-6 text-indigo-500"/>
                         <div><p className="font-semibold text-[#1C1C1E]">画像形式で保存</p><p className="text-[11px] text-[#8E8E93]">SNS共有用</p></div>
@@ -1667,7 +1671,8 @@ export default function App() {
                   <Marker
                     key={s.id}
                     position={{ lat: s.lat, lng: s.lng }}
-                    icon={mkSightingIcon(i + 1)}
+                    icon={mkSightingIcon(i + 1, expandedSightingId === s.id)}
+                    zIndex={expandedSightingId === s.id ? 999 : 1}
                     onClick={() => { setSelectedSightingId(s.id); setIsLostInfoOpen(false); setTrackerAreaId(null); }}
                   />
                 ))}
@@ -1698,7 +1703,7 @@ export default function App() {
                             style={{ fontSize: 11, color: '#406D1F', fontWeight: 700, flex: 1, textAlign: 'center', background: '#F0F7EC', padding: '5px 8px', borderRadius: 6, border: '1px solid #406D1F40', cursor: 'pointer', whiteSpace: 'nowrap' }}
                           >捜索ポイントに追加</button>
                           <button
-                            onClick={() => { setSightings(p => p.filter(x => x.id !== s.id)); setSelectedSightingId(null); }}
+                            onClick={() => { setPendingDeleteId({ type: 'sighting', id: s.id }); setSelectedSightingId(null); }}
                             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', background: '#FEF2F2', padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer' }}
                           ><Trash2 size={14} /></button>
                         </div>
@@ -1712,7 +1717,8 @@ export default function App() {
                   <Marker
                     key={`area-${area.id}`}
                     position={{ lat: area.lat, lng: area.lng }}
-                    icon={mkAreaIcon(area.status, idx + 1)}
+                    icon={mkAreaIcon(area.status, idx + 1, expandedAreaId === area.id)}
+                    zIndex={expandedAreaId === area.id ? 999 : 1}
                     onClick={() => { setTrackerAreaId(area.id); setSelectedSightingId(null); setIsLostInfoOpen(false); }}
                   />
                 ))}
@@ -1750,8 +1756,9 @@ export default function App() {
                   navigator.clipboard?.writeText(text);
                   alert('共有リンクをコピーしました');
                 }
-              }} className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all bg-[#D97757] text-white">
-                <Share2 className="w-7 h-7"/>
+              }} className="w-14 h-14 rounded-[4px] shadow-lg flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all bg-[#D97757] text-white">
+                <Share2 className="w-6 h-6"/>
+                <span className="text-[10px] font-bold leading-none">共有</span>
               </button>
             </div>
 
@@ -1769,16 +1776,16 @@ export default function App() {
                   </div>
                   {/* Action buttons */}
                   <div className="grid grid-cols-2 gap-3">
-                    <button onClick={handleMapTapSighting} className="py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
+                    <button onClick={handleMapTapSighting} className="py-4 rounded-xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
                       <Camera className="w-7 h-7 text-[#D97757]"/>
                       <span className="text-[13px] font-semibold text-[#1A2E2D]">目撃情報を登録</span>
                     </button>
-                    <button onClick={handleMapTapSearched} className="py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
+                    <button onClick={handleMapTapSearched} className="py-4 rounded-xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
                       <CheckCircle2 className="w-7 h-7 text-[#406D1F]"/>
                       <span className="text-[13px] font-semibold text-[#1A2E2D]">捜索済みにする</span>
                     </button>
                   </div>
-                  <button onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }} className="w-full mt-3 py-3 rounded-2xl text-[14px] font-semibold text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
+                  <button onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }} className="w-full mt-3 py-3 rounded-xl text-[14px] font-semibold text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
                     キャンセル
                   </button>
                 </div>
@@ -1823,23 +1830,68 @@ export default function App() {
                         <p className="text-sm text-[#8E8E93] mt-1">マップをタップしてピンを追加</p>
                       </div>
                     ) : (
-                      sightings.map((s, i) => (
-                        <div
-                          key={s.id}
-                          onClick={() => { setSelectedSightingId(s.id); setSheetExpanded(false); }}
-                          className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}
-                        >
-                          <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shrink-0">{i + 1}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight truncate">{s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              {s.time && <span className="text-[12px] text-[#8E8E93]">{fmtDatetime(s.time)}</span>}
-                              {s.note && <span className="text-[12px] text-[#8E8E93] truncate">— {s.note}</span>}
+                      sightings.map((s, i) => {
+                        const isSightExpanded = expandedSightingId === s.id;
+                        return (
+                          <div key={s.id} className={i > 0 ? 'border-t border-[#ECE2CE]/60' : ''}>
+                            <button onClick={() => {
+                              const nextId = isSightExpanded ? null : s.id;
+                              setExpandedSightingId(nextId);
+                              if (nextId && trackerMapRef.current && s.lat && s.lng) {
+                                trackerMapRef.current.panTo({ lat: s.lat, lng: s.lng });
+                                trackerMapRef.current.setZoom(15);
+                              }
+                            }} className="w-full flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors text-left">
+                              <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shrink-0">{i + 1}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight truncate">{s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  {s.time && <span className="text-[12px] text-[#8E8E93]">{fmtDatetime(s.time)}</span>}
+                                  {s.note && <span className="text-[12px] text-[#8E8E93] truncate">— {s.note}</span>}
+                                </div>
+                              </div>
+                              <ChevronDown className={`w-4 h-4 text-[#1A2E2D] shrink-0 transition-transform duration-200 ${isSightExpanded ? 'rotate-180' : ''}`}/>
+                            </button>
+                            {/* Accordion content */}
+                            <div className="overflow-hidden transition-all duration-200" style={{ maxHeight: isSightExpanded ? '500px' : '0px', opacity: isSightExpanded ? 1 : 0 }}>
+                              <div className="px-5 pb-3 space-y-2.5">
+                                {/* Note */}
+                                {s.note && (
+                                  <p className="text-[13px] text-[#1A2E2D] leading-relaxed">{s.note}</p>
+                                )}
+                                {/* Photos */}
+                                {s.images && s.images.length > 0 && (
+                                  <div className={`flex gap-2 ${s.images.length === 1 ? '' : 'overflow-x-auto'}`}>
+                                    {s.images.map((img, idx) => (
+                                      <img key={idx} src={img} alt={`目撃写真 ${idx + 1}`}
+                                        className="rounded-xl max-h-[160px] object-contain flex-shrink-0"
+                                        style={s.images.length === 1 ? { width: '100%' } : { maxWidth: '70%' }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                                {/* Actions */}
+                                <div className="flex gap-2">
+                                  <button onClick={() => {
+                                    const exists = areas.some(a => a.lat === s.lat && a.lng === s.lng);
+                                    if (!exists) {
+                                      setAreas(p => [...p, { id: Date.now(), name: s.address || `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`, note: '', status: '未着手', time: '今すぐ', lat: s.lat, lng: s.lng }]);
+                                    }
+                                    setExpandedSightingId(null);
+                                    setMapSubTab('areas');
+                                  }} className="flex-1 py-2.5 rounded-xl bg-transparent border-2 border-[#406D1F]/40 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                                    <MapPin className="w-4 h-4 text-[#406D1F]"/>
+                                    <span className="text-[12px] font-semibold text-[#406D1F]">捜索ポイントに追加</span>
+                                  </button>
+                                  <button onClick={() => setPendingDeleteId({ type: 'sighting', id: s.id })} className="py-2.5 px-3 rounded-xl bg-transparent border-2 border-[#C0392B]/40 flex items-center justify-center active:scale-95 transition-all">
+                                    <Trash2 className="w-4 h-4 text-[#C0392B]"/>
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[#1A2E2D] shrink-0"/>
-                        </div>
-                      ))
+                        );
+                      })
                     )
                   ) : (
                     /* ─── Areas list ─── */
@@ -1920,11 +1972,7 @@ export default function App() {
                                   <Camera className="w-4 h-4 text-[#D97757]"/>
                                   <span className="text-[12px] font-semibold text-[#D97757]">目撃登録</span>
                                 </button>
-                                <button onClick={() => {
-                                  setSelectedArea(area);
-                                  setIsDetailOpen(true);
-                                  setExpandedAreaId(null);
-                                }} className="py-2.5 px-3 rounded-xl bg-transparent border-2 border-[#C0392B]/40 flex items-center justify-center active:scale-95 transition-all">
+                                <button onClick={() => setPendingDeleteId({ type: 'area', id: area.id })} className="py-2.5 px-3 rounded-xl bg-transparent border-2 border-[#C0392B]/40 flex items-center justify-center active:scale-95 transition-all">
                                   <Trash2 className="w-4 h-4 text-[#C0392B]"/>
                                 </button>
                               </div>
@@ -1936,7 +1984,7 @@ export default function App() {
                   )}
                   {/* ── 捜索を終了する ── */}
                   <div className="px-5 py-4">
-                    <button onClick={() => setShowEndConfirm(true)} className="w-full py-3.5 rounded-2xl font-semibold text-[15px] text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
+                    <button onClick={() => setShowEndConfirm(true)} className="w-full py-3.5 rounded-xl font-semibold text-[15px] text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
                       捜索を終了する
                     </button>
                   </div>
@@ -1954,7 +2002,7 @@ export default function App() {
                     <button
                       key={id}
                       onClick={() => { setMapSubTab(id); if (mapSubTab !== id) setSheetExpanded(false); }}
-                      className={`flex flex-col items-center justify-center gap-1 flex-1 transition-all active:opacity-80 ${isActive ? 'bg-white rounded-2xl text-[#22807F]' : 'text-[#1A2E2D]'}`}
+                      className={`flex flex-col items-center justify-center gap-1 flex-1 transition-all active:opacity-80 ${isActive ? 'bg-white rounded-xl text-[#22807F]' : 'text-[#1A2E2D]'}`}
                       style={{ height: '56px' }}
                     >
                       <Icon className="w-5 h-5 stroke-[2px]"/>
@@ -2003,7 +2051,7 @@ export default function App() {
 
           {/* 検索バー */}
           <div className="absolute top-12 left-16 right-4 z-10">
-            <div className="bg-white rounded-2xl shadow-md flex items-center px-3 gap-2">
+            <div className="bg-white rounded-xl shadow-md flex items-center px-3 gap-2">
               <input
                 type="text"
                 placeholder="住所を入力して検索…"
@@ -2034,7 +2082,7 @@ export default function App() {
               <button
                 onClick={handleEditMapConfirm}
                 disabled={editMapGeocoding}
-                className="w-full bg-[#22807F] disabled:opacity-40 text-white py-3.5 rounded-2xl font-bold text-[15px] active:scale-95 transition-all"
+                className="w-full bg-[#22807F] disabled:opacity-40 text-white py-3.5 rounded-xl font-bold text-[15px] active:scale-95 transition-all"
               >
                 この場所を選択
               </button>
@@ -2082,6 +2130,56 @@ export default function App() {
                 className="w-full py-4 text-[17px] font-medium text-[#007AFF] active:bg-[#F2F2F7] transition-colors"
               >
                 キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirmation modal ── */}
+      {pendingDeleteId && (
+        <div
+          className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+          style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}
+          onClick={() => setPendingDeleteId(null)}
+        >
+          <div
+            className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-lg flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-5 pt-3 pb-4 border-b border-[#ECE2CE] flex justify-between items-center bg-[#E6D6B5]">
+              <h3 className="font-bold text-[17px] text-[#1A2E2D]">削除しますか？</h3>
+              <button onClick={() => setPendingDeleteId(null)} className="w-8 h-8 rounded-full bg-[#1A2E2D]/10 flex items-center justify-center">
+                <X className="w-4 h-4 text-[#1A2E2D]"/>
+              </button>
+            </div>
+            <div className="p-6 text-center">
+              <p className="text-[14px] text-[#1A2E2D] leading-relaxed">
+                {pendingDeleteId.type === 'sighting' ? 'この目撃情報' : 'この捜索ポイント'}を削除します。<br/>この操作は取り消せません。
+              </p>
+            </div>
+            <div className="px-5 pb-5 flex gap-3">
+              <button
+                onClick={() => setPendingDeleteId(null)}
+                className="flex-1 py-3.5 rounded-xl font-semibold text-[15px] text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => {
+                  if (pendingDeleteId.type === 'sighting') {
+                    setSightings(p => p.filter(x => x.id !== pendingDeleteId.id));
+                    setExpandedSightingId(null);
+                    setSelectedSightingId(null);
+                  } else {
+                    setAreas(p => p.filter(a => a.id !== pendingDeleteId.id));
+                    setExpandedAreaId(null);
+                  }
+                  setPendingDeleteId(null);
+                }}
+                className="flex-1 py-3.5 rounded-xl font-semibold text-[15px] text-white bg-[#C0392B] active:scale-[0.98] transition-all"
+              >
+                削除
               </button>
             </div>
           </div>

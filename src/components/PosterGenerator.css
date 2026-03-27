@@ -133,7 +133,7 @@
 
 /* Header banner */
 .poster-header-bar {
-  background: #22807F;
+  background: #D97757;
   margin: 16px 16px 0;
   padding: 18px 24px;
   border-radius: 12px 12px 0 0;
@@ -234,7 +234,7 @@
   content: '';
   display: block;
   height: 2px;
-  background: #22807F;
+  background: #D97757;
   margin-top: 3px;
   opacity: 0.5;
 }
@@ -303,7 +303,7 @@
 
 /* Contact footer */
 .poster-contact-bar {
-  background: #22807F;
+  background: #D97757;
   margin: 0 16px 16px;
   padding: 14px 20px;
   border-radius: 0 0 12px 12px;
