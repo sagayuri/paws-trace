@@ -4,7 +4,7 @@ import {
   Map as MapIcon, FileText, Target, Plus, Camera,
   CheckCircle2, Circle, X, MapPin, Image as ImageIcon,
   Download, Printer, Trash2, ChevronRight, FileDown, ClipboardList, Share2, ChevronLeft, Calendar,
-  ChevronUp, ChevronDown, CircleAlert, Crosshair,
+  ChevronUp, ChevronDown, CircleAlert, Crosshair, Clock,
 } from 'lucide-react';
 import { colors, typography, FIGMA_PAWS, PAW_ANIM_ORDER } from './tokens';
 import PawTraceLogo from './components/PawTraceLogo';
@@ -788,7 +788,7 @@ const DatePickerField = ({ label, value, onChange }) => {
 
   return (
     <div className="col-span-2 relative">
-      <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">{label}</label>
+      {label && <label className="text-[11px] font-semibold text-[#8E8E93] mb-1 block">{label}</label>}
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
@@ -1106,59 +1106,76 @@ const AddSightingModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAd
   if (!isOpen) return null;
   return (
     <>
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm font-sans">
-      <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-lg max-h-[90vh] overflow-y-auto">
-        <div className="pt-3 px-6 pb-6"><div className="w-9 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[17px] font-semibold text-[#1C1C1E]">目撃情報を登録</h3>
-            <button onClick={onClose}><X className="w-6 h-6 text-slate-400"/></button>
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+      <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-lg flex flex-col max-h-[90vh] overflow-hidden">
+        {/* Header — matches FlyerEditModal */}
+        <div className="px-5 pt-3 pb-4 border-b border-[#ECE2CE] flex justify-between items-center bg-[#E6D6B5] shrink-0">
+          <h3 className="font-bold text-[17px] text-[#1A2E2D]">目撃情報を登録</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#1A2E2D]/10 flex items-center justify-center"><X className="w-4 h-4 text-[#1A2E2D]"/></button>
+        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+          <div>
+            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">場所</label>
+            <div className="relative">
+              {isLoadingAddress
+                ? <div className="absolute left-3 top-3.5 w-4 h-4 border-2 border-[#22807F] border-t-transparent rounded-full animate-spin"/>
+                : <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#22807F]"/>
+              }
+              <input type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" placeholder={isLoadingAddress ? '住所を取得中…' : '場所を入力'} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}/>
+            </div>
           </div>
-          <div className="space-y-5">
-            <div>
-              <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">場所</label>
-              <div className="relative">
-                {isLoadingAddress
-                  ? <div className="absolute left-3 top-3.5 w-4 h-4 border-2 border-[#73351F] border-t-transparent rounded-full animate-spin"/>
-                  : <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#73351F]"/>
-                }
-                <input type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" placeholder={isLoadingAddress ? '住所を取得中…' : '場所を入力'} value={form.address} onChange={e => setForm({ ...form, address: e.target.value })}/>
+          <div>
+            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">日時</label>
+            <div className="space-y-2">
+              <div className="flex gap-2 items-stretch">
+                <div className="flex-1 min-w-0">
+                  <DatePickerField label="" value={form.time?.slice(0, 10) || ''} onChange={dateStr => {
+                    const timePart = form.time?.slice(11, 16) || nowDatetime().slice(11, 16);
+                    setForm(prev => ({ ...prev, time: dateStr ? `${dateStr}T${timePart}` : '' }));
+                  }}/>
+                </div>
+                <div className="relative shrink-0">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#22807F] pointer-events-none"/>
+                  <input type="time" className="pl-9 pr-3 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E] w-[115px] h-full [&::-webkit-calendar-picker-indicator]:hidden" value={form.time?.slice(11, 16) || ''} onChange={e => {
+                    const datePart = form.time?.slice(0, 10) || nowDatetime().slice(0, 10);
+                    setForm(prev => ({ ...prev, time: `${datePart}T${e.target.value}` }));
+                  }}/>
+                </div>
               </div>
+              <button onClick={() => setForm({ ...form, time: nowDatetime() })} className="px-4 py-2.5 text-[13px] font-semibold text-[#22807F] bg-transparent border border-[#22807F] rounded-xl">現在の日時を入力</button>
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">日時</label>
-              <div className="flex gap-2">
-                <input type="datetime-local" className="flex-1 p-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })}/>
-                <button onClick={() => setForm({ ...form, time: nowDatetime() })} className="shrink-0 px-4 py-3 text-[13px] font-semibold text-[#007AFF] bg-[#EBF5FF] rounded-xl">現在</button>
-              </div>
+          </div>
+          {/* ── 写真アップロード ── */}
+          <div>
+            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">写真</label>
+            <div className="flex gap-2 flex-wrap">
+              {form.images.map((src, i) => (
+                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-[#ECE2CE] shrink-0">
+                  <img src={src} alt="" className="w-full h-full object-cover"/>
+                  <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
+                    <X className="w-3 h-3 text-white"/>
+                  </button>
+                </div>
+              ))}
+              {form.images.length < 2 && (
+                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-[#ECE2CE] flex flex-col items-center justify-center cursor-pointer bg-[#FCF1D8]/50 hover:bg-[#E6D6B5]/30 active:opacity-70 shrink-0 transition-all">
+                  <Camera className="w-6 h-6 text-[#22807F]/40 mb-1"/>
+                  <span className="text-[10px] font-medium text-[#8E8E93] text-center leading-tight">写真を<br/>追加</span>
+                  <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageAdd}/>
+                </label>
+              )}
             </div>
-            {/* ── 写真アップロード ── */}
-            <div>
-              <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">写真</label>
-              <div className="flex gap-2 flex-wrap">
-                {form.images.map((src, i) => (
-                  <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 shrink-0">
-                    <img src={src} alt="" className="w-full h-full object-cover"/>
-                    <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center">
-                      <X className="w-3 h-3 text-white"/>
-                    </button>
-                  </div>
-                ))}
-                {form.images.length < 2 && (
-                  <label className="w-20 h-20 rounded-xl border-2 border-dashed border-[#C6C6C8] flex flex-col items-center justify-center cursor-pointer bg-[#F2F2F7] active:opacity-70 shrink-0">
-                    <Camera className="w-6 h-6 text-slate-300 mb-1"/>
-                    <span className="text-[10px] font-medium text-[#8E8E93] text-center leading-tight">写真を<br/>追加</span>
-                    <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageAdd}/>
-                  </label>
-                )}
-              </div>
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">メモ</label>
-              <textarea placeholder="状況を入力してください" className="w-full p-3 bg-[#F2F2F7] rounded-xl h-24 outline-none text-sm font-medium resize-none text-[#1C1C1E]" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })}/>
-            </div>
-            <button onClick={() => onSave(form)} className="w-full bg-[#73351F] text-white py-4 rounded-2xl font-semibold text-base shadow-sm active:scale-95 transition-all">登録</button>
+          <div>
+            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">メモ</label>
+            <textarea placeholder="状況を入力してください" className="w-full p-3 bg-[#F2F2F7] rounded-xl h-24 outline-none text-sm font-medium resize-none text-[#1C1C1E]" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })}/>
           </div>
+        </div>
+        {/* Footer CTA — matches FlyerEditModal */}
+        <div className="px-5 py-4 border-t border-[#ECE2CE] shrink-0">
+          <button onClick={() => onSave(form)} className="w-full bg-[#D97757] text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">登録</button>
         </div>
       </div>
     </div>
