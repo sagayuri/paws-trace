@@ -1337,7 +1337,7 @@ export default function App() {
   const editMapRef = useRef(null);
 
   // Tracker state
-  const [isTrackerMenuOpen, setIsTrackerMenuOpen]   = useState(false);
+  const [expandedAreaId, setExpandedAreaId]         = useState(null);
   const [isDetailOpen, setIsDetailOpen]             = useState(false);
   const [isAddAreaOpen, setIsAddAreaOpen]           = useState(false);
   const [selectedArea, setSelectedArea]             = useState(null);
@@ -1403,22 +1403,23 @@ export default function App() {
     setMapTapMenu(latlng);
     setIsMapMenuOpen(false);
     setSelectedSightingId(null);
+    resolveAddress(latlng);
   };
 
-  // Choose "目撃情報を追加" from map tap menu
+  // Choose "目撃情報を登録" from map tap menu
   const handleMapTapSighting = () => {
     if (!mapTapMenu) return;
-    resolveAddress(mapTapMenu);
     setIsSightingOpen(true);
     setMapTapMenu(null);
   };
 
-  // Choose "捜索ポイントを追加" from map tap menu
-  const handleMapTapArea = () => {
+  // Choose "捜索済みにする" from map tap menu
+  const handleMapTapSearched = () => {
     if (!mapTapMenu) return;
-    resolveAddress(mapTapMenu);
-    setIsAddAreaOpen(true);
+    setAreas(p => [...p, { id: Date.now(), name: pendingAddress || `${mapTapMenu.lat.toFixed(4)}, ${mapTapMenu.lng.toFixed(4)}`, note: '', status: '捜索済み', time: new Date().toISOString().slice(0, 16), lat: mapTapMenu.lat, lng: mapTapMenu.lng }]);
     setMapTapMenu(null);
+    setPendingLatLng(null);
+    setMapSubTab('areas');
   };
 
   const handleSaveSighting = (form) => {
@@ -1504,8 +1505,12 @@ export default function App() {
     setIsEditMapOpen(false);
   };
 
+  // Tracker map ref for panning
+  const trackerMapRef = useRef(null);
+
   // Tracker map: auto-fit bounds when map loads
   const handleTrackerMapLoad = useCallback((map) => {
+    trackerMapRef.current = map;
     const allPoints = [...sightings, ...areas.filter(a => a.lat && a.lng)];
     if (allPoints.length === 0) return;
     const bounds = new window.google.maps.LatLngBounds();
@@ -1513,7 +1518,7 @@ export default function App() {
     map.fitBounds(bounds, 40);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const confirmedCount = areas.filter(a => a.status === '確認済み').length;
+  const confirmedCount = areas.filter(a => a.status === '確認済み' || a.status === '捜索済み').length;
   const progress = areas.length > 0 ? Math.round((confirmedCount / areas.length) * 100) : 0;
 
   // Loading placeholder for when Google Maps API isn't ready
@@ -1680,7 +1685,7 @@ export default function App() {
                         {s.time    && <p style={{ fontSize: 11, color: '#64748B', marginBottom: 2 }}>🕐 {fmtDatetime(s.time)}</p>}
                         {s.address && <p style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>📍 {s.address}</p>}
                         {s.note    && <p style={{ fontSize: 11, color: '#94A3B8', fontStyle: 'italic', marginBottom: 4 }}>{s.note}</p>}
-                        <div style={{ display: 'flex', gap: 6 }}>
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'stretch' }}>
                           <button
                             onClick={() => {
                               const exists = areas.some(a => a.lat === s.lat && a.lng === s.lng);
@@ -1690,12 +1695,12 @@ export default function App() {
                               setSelectedSightingId(null);
                               setMapSubTab('areas');
                             }}
-                            style={{ fontSize: 11, color: '#406D1F', fontWeight: 700, flex: 1, textAlign: 'center', background: '#F0F7EC', padding: '5px 0', borderRadius: 6, border: '1px solid #406D1F40', cursor: 'pointer' }}
+                            style={{ fontSize: 11, color: '#406D1F', fontWeight: 700, flex: 1, textAlign: 'center', background: '#F0F7EC', padding: '5px 8px', borderRadius: 6, border: '1px solid #406D1F40', cursor: 'pointer', whiteSpace: 'nowrap' }}
                           >捜索ポイントに追加</button>
                           <button
                             onClick={() => { setSightings(p => p.filter(x => x.id !== s.id)); setSelectedSightingId(null); }}
-                            style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, flex: 1, textAlign: 'center', background: '#FEF2F2', padding: '5px 0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
-                          >削除</button>
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', background: '#FEF2F2', padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer' }}
+                          ><Trash2 size={14} /></button>
                         </div>
                       </div>
                     </InfoWindow>
@@ -1750,23 +1755,30 @@ export default function App() {
               </button>
             </div>
 
-            {/* Map tap menu — choose sighting or search point */}
+            {/* Map tap menu — modal overlay */}
             {mapTapMenu && (
-              <div className="fixed inset-0 z-[100]" onClick={() => setMapTapMenu(null)}>
-                <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg pb-6 pt-2 px-5" onClick={e => e.stopPropagation()} style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
-                  <div className="w-9 h-1 bg-[#1A2E2D]/20 rounded-full mx-auto mb-4"/>
-                  <p className="text-[13px] text-[#8E8E93] font-medium mb-3">この地点に追加</p>
-                  <div className="flex gap-3">
-                    <button onClick={handleMapTapSighting} className="flex-1 py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
-                      <CircleAlert className="w-6 h-6 text-[#D97757]"/>
-                      <span className="text-[13px] font-semibold text-[#1A2E2D]">目撃情報</span>
+              <div className="fixed inset-0 z-[200] flex items-center justify-center" onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }}>
+                <div className="absolute inset-0 bg-black/40"/>
+                <div className="relative w-[calc(100%-48px)] max-w-[360px] rounded-3xl shadow-xl p-5" onClick={e => e.stopPropagation()} style={{ background: '#EEE1C6', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+                  {/* Address */}
+                  <div className="flex items-start gap-2 mb-4">
+                    <MapPin className="w-4 h-4 text-[#D97757] mt-0.5 flex-shrink-0"/>
+                    <p className="font-bold text-[15px] text-[#1A2E2D] leading-snug">
+                      {isAddressLoading ? '住所を取得中...' : pendingAddress}
+                    </p>
+                  </div>
+                  {/* Action buttons */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button onClick={handleMapTapSighting} className="py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
+                      <Camera className="w-7 h-7 text-[#D97757]"/>
+                      <span className="text-[13px] font-semibold text-[#1A2E2D]">目撃情報を登録</span>
                     </button>
-                    <button onClick={handleMapTapArea} className="flex-1 py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
-                      <Crosshair className="w-6 h-6 text-[#22807F]"/>
-                      <span className="text-[13px] font-semibold text-[#1A2E2D]">捜索ポイント</span>
+                    <button onClick={handleMapTapSearched} className="py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
+                      <CheckCircle2 className="w-7 h-7 text-[#406D1F]"/>
+                      <span className="text-[13px] font-semibold text-[#1A2E2D]">捜索済みにする</span>
                     </button>
                   </div>
-                  <button onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }} className="w-full mt-3 py-3.5 rounded-2xl text-[15px] font-semibold text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
+                  <button onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }} className="w-full mt-3 py-3 rounded-2xl text-[14px] font-semibold text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
                     キャンセル
                   </button>
                 </div>
@@ -1832,41 +1844,94 @@ export default function App() {
                   ) : (
                     /* ─── Areas list ─── */
                     <>
-                      {/* Progress bar */}
-                      <div className="px-5 py-3 bg-[#F9F9F9] border-b border-[#ECE2CE]/60">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[11px] font-semibold text-[#8E8E93]">捜索進捗</span>
-                          <span className="text-sm font-bold text-[#73351F]">{progress}%</span>
-                        </div>
-                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#22807F] rounded-full transition-all duration-700" style={{ width: `${progress}%` }}/>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-[11px] text-[#8E8E93]">{confirmedCount}/{areas.length} エリア</span>
-                          <span className="text-[11px] text-[#8E8E93]">目撃 {sightings.length}件</span>
+                      {/* Donut chart progress */}
+                      <div className="flex items-center gap-4 px-5 py-3 border-b border-[#ECE2CE]/60">
+                        <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0">
+                          <circle cx="22" cy="22" r="18" fill="none" stroke="#E8E8E8" strokeWidth="6"/>
+                          <circle cx="22" cy="22" r="18" fill="none" stroke="#22807F" strokeWidth="6"
+                            strokeDasharray={`${2 * Math.PI * 18 * progress / 100} ${2 * Math.PI * 18}`}
+                            strokeLinecap="round"
+                            transform="rotate(-90 22 22)"
+                            style={{ transition: 'stroke-dasharray 0.7s ease' }}
+                          />
+                          <text x="22" y="23" textAnchor="middle" dominantBaseline="central" fontSize="11" fontWeight="700" fill="#1A2E2D">{progress}%</text>
+                        </svg>
+                        <div className="flex-1 flex items-center justify-between">
+                          <div>
+                            <span className="text-[12px] font-bold text-[#1A2E2D]">{confirmedCount}/{areas.length}</span>
+                            <span className="text-[11px] text-[#8E8E93] ml-1">エリア完了</span>
+                          </div>
+                          <div>
+                            <span className="text-[12px] font-bold text-[#D97757]">{sightings.length}</span>
+                            <span className="text-[11px] text-[#8E8E93] ml-1">目撃</span>
+                          </div>
                         </div>
                       </div>
                       {areas.length === 0 ? (
                         <div className="text-center py-10">
                           <p className="font-semibold text-[#8E8E93]">捜索エリアがありません</p>
-                          <p className="text-sm text-[#8E8E93] mt-1">下のボタンでエリアを追加</p>
+                          <p className="text-sm text-[#8E8E93] mt-1">マップをタップして追加</p>
                         </div>
-                      ) : areas.map((area, idx) => (
-                        <div key={area.id} onClick={() => { setSelectedArea(area); setIsTrackerMenuOpen(true); }} className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${idx > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}>
-                          <span className="bg-[#406D1F] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shrink-0">{idx + 1}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight">{area.name}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[12px] font-medium text-[#8E8E93]">{area.status}</span>
-                              <span className="text-[11px] text-[#8E8E93]">{area.time}</span>
+                      ) : areas.map((area, idx) => {
+                        const isExpanded = expandedAreaId === area.id;
+                        return (
+                          <div key={area.id} className={idx > 0 ? 'border-t border-[#ECE2CE]/60' : ''}>
+                            {/* Row header — tap to toggle */}
+                            <button onClick={() => {
+                              const nextId = isExpanded ? null : area.id;
+                              setExpandedAreaId(nextId);
+                              if (nextId && trackerMapRef.current && area.lat && area.lng) {
+                                trackerMapRef.current.panTo({ lat: area.lat, lng: area.lng });
+                                trackerMapRef.current.setZoom(15);
+                              }
+                            }} className="w-full flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors text-left">
+                              <span className="bg-[#406D1F] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shrink-0">{idx + 1}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight">{area.name}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className={`text-[12px] font-medium ${area.status === '捜索済み' || area.status === '確認済み' ? 'text-[#406D1F]' : 'text-[#8E8E93]'}`}>{area.status}</span>
+                                  <span className="text-[11px] text-[#8E8E93]">{area.time}</span>
+                                </div>
+                              </div>
+                              <ChevronDown className={`w-4 h-4 text-[#1A2E2D] shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}/>
+                            </button>
+                            {/* Accordion content */}
+                            <div className="overflow-hidden transition-all duration-200" style={{ maxHeight: isExpanded ? '160px' : '0px', opacity: isExpanded ? 1 : 0 }}>
+                              {/* Status chip row */}
+                              <div className="px-5 pb-2 flex items-center gap-2">
+                                {['未着手', '捜索済み'].map(st => {
+                                  const isActive = area.status === st;
+                                  return (
+                                    <button key={st} onClick={() => {
+                                      setAreas(p => p.map(a => a.id === area.id ? { ...a, status: st, time: '今すぐ' } : a));
+                                    }} className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${isActive ? 'bg-[#406D1F] text-white' : 'bg-transparent border border-[#1A2E2D]/20 text-[#1A2E2D]/60'}`}>
+                                      {st}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {/* Action buttons */}
+                              <div className="px-5 pb-3 flex gap-2">
+                                <button onClick={() => {
+                                  setExpandedAreaId(null);
+                                  setPendingAddress(area.name || '');
+                                  setIsSightingOpen(true);
+                                }} className="flex-1 py-2.5 rounded-xl bg-transparent border-2 border-[#D97757]/40 flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                                  <Camera className="w-4 h-4 text-[#D97757]"/>
+                                  <span className="text-[12px] font-semibold text-[#D97757]">目撃登録</span>
+                                </button>
+                                <button onClick={() => {
+                                  setSelectedArea(area);
+                                  setIsDetailOpen(true);
+                                  setExpandedAreaId(null);
+                                }} className="py-2.5 px-3 rounded-xl bg-transparent border-2 border-[#C0392B]/40 flex items-center justify-center active:scale-95 transition-all">
+                                  <Trash2 className="w-4 h-4 text-[#C0392B]"/>
+                                </button>
+                              </div>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[#1A2E2D] shrink-0"/>
-                        </div>
-                      ))}
-                      <button onClick={() => setIsAddAreaOpen(true)} className="mx-5 my-3 bg-white text-[#73351F] py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-[#73351F]/30 active:scale-95 transition-all w-[calc(100%-40px)]">
-                        <Plus className="w-5 h-5"/> エリアを追加
-                      </button>
+                        );
+                      })}
                     </>
                   )}
                   {/* ── 捜索を終了する ── */}
@@ -1979,23 +2044,6 @@ export default function App() {
       )}
       <AddSightingModal isOpen={isSightingOpen} onClose={() => setIsSightingOpen(false)} onSave={handleSaveSighting} initialAddress={pendingAddress} isLoadingAddress={isAddressLoading}/>
       <AddAreaModal     isOpen={isAddAreaOpen} onClose={() => setIsAddAreaOpen(false)} initialAddress={pendingAddress} isLoadingAddress={isAddressLoading} onSave={({ name, note }) => { setAreas(p => [...p, { id: Date.now(), name, note, status: '未着手', time: '今すぐ', lat: pendingLatLng?.lat ?? null, lng: pendingLatLng?.lng ?? null }]); setIsAddAreaOpen(false); setPendingLatLng(null); }}/>
-
-      {/* Tracker area bottom sheet */}
-      {isTrackerMenuOpen && (
-        <div className="fixed inset-0 z-[150] flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setIsTrackerMenuOpen(false)}>
-          <div className="bg-white w-full max-w-md rounded-t-3xl pt-3 px-6 pb-6 font-sans" onClick={e => e.stopPropagation()}><div className="w-9 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
-            <h3 className="font-semibold text-[17px] text-[#1C1C1E] mb-4">{selectedArea?.name}</h3>
-            <div className="grid grid-cols-2 gap-4 pb-2">
-              <button onClick={() => { setIsTrackerMenuOpen(false); setPendingAddress(selectedArea?.name || ''); setIsSightingOpen(true); }} className="p-5 bg-[#FFF3E0] border border-[#73351F]/20 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all">
-                <Camera className="w-8 h-8 text-[#73351F]"/><span className="text-xs font-medium text-[#1C1C1E]">目撃情報を登録</span>
-              </button>
-              <button onClick={() => { setIsTrackerMenuOpen(false); setIsDetailOpen(true); }} className="p-5 bg-[#E8F0FE] border border-[#3B82F6]/20 rounded-2xl flex flex-col items-center gap-2 active:scale-95 transition-all">
-                <ClipboardList className="w-8 h-8 text-indigo-600"/><span className="text-xs font-medium text-[#1C1C1E]">詳細を確認</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <AreaDetailModal
         area={selectedArea} isOpen={isDetailOpen} onClose={() => setIsDetailOpen(false)}
