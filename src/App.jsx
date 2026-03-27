@@ -110,16 +110,25 @@ function mkSightingIcon(num) {
   };
 }
 
-function mkAreaIcon(status) {
-  const { bg, symbol } = AREA_STATUS_STYLE[status] || AREA_STATUS_STYLE['未着手'];
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
-    <rect x="2" y="2" width="26" height="26" rx="7" fill="${bg}" stroke="white" stroke-width="3"/>
-    <text x="15" y="21" text-anchor="middle" font-size="14" font-weight="900" fill="white" font-family="system-ui,-apple-system,sans-serif">${symbol}</text>
-  </svg>`;
+// マップタップ時の仮ピン — グレー #D6D3D0
+function mkTapIcon() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="#D6D3D0"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="#D6D3D0"/><text x="12.76" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="#D6D3D0" font-family="sans-serif">+</text></svg>`;
+  return {
+    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+    scaledSize: new window.google.maps.Size(30, 40),
+    anchor: new window.google.maps.Point(15, 36),
+  };
+}
+
+function mkAreaIcon(status, num) {
+  const { symbol } = AREA_STATUS_STYLE[status] || AREA_STATUS_STYLE['未着手'];
+  const label = num != null ? num : symbol;
+  const AREA_COLOR = '#406D1F';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="35" viewBox="0 0 26 35"><path d="${PIN_TEARDROP}" fill="${AREA_COLOR}"/><path d="${PIN_CIRCLE}" fill="white"/><path d="${PIN_DOT}" fill="${AREA_COLOR}"/><text x="12.76" y="16" text-anchor="middle" font-size="11" font-weight="900" fill="${AREA_COLOR}" font-family="sans-serif">${label}</text></svg>`;
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(30, 30),
-    anchor: new window.google.maps.Point(15, 15),
+    scaledSize: new window.google.maps.Size(30, 40),
+    anchor: new window.google.maps.Point(15, 36),
   };
 }
 
@@ -1240,54 +1249,42 @@ const AreaDetailModal = ({ area, isOpen, onClose, onUpdate, onDelete }) => {
 };
 
 // ─── Add Area Modal ───────────────────────────────────────────────────────────
-const AddAreaModal = ({ isOpen, onClose, onSave }) => {
+const AddAreaModal = ({ isOpen, onClose, onSave, initialAddress, isLoadingAddress }) => {
   const [name, setName] = useState('');
   const [note, setNote] = useState('');
-  const [isGeocoding, setIsGeocoding] = useState(false);
 
-  useEffect(() => { if (isOpen) { setName(''); setNote(''); setIsGeocoding(false); } }, [isOpen]);
+  useEffect(() => { if (isOpen) { setName(initialAddress || ''); setNote(''); } }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (isOpen && initialAddress) setName(initialAddress); }, [initialAddress]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!isOpen) return null;
 
-  const handleSave = async () => {
-    if (!name.trim()) return;
-    setIsGeocoding(true);
-    let lat = null, lng = null;
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name)}&limit=1&accept-language=ja`,
-        { headers: { 'Accept-Language': 'ja' } }
-      );
-      const results = await res.json();
-      if (results[0]) { lat = parseFloat(results[0].lat); lng = parseFloat(results[0].lon); }
-    } catch {}
-    setIsGeocoding(false);
-    onSave({ name, note, lat, lng });
-  };
-
   return (
-    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm font-sans">
-      <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-lg">
-        <div className="pt-3 px-6 pb-6"><div className="w-9 h-1 bg-[#C6C6C8] rounded-full mx-auto mb-4"/>
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[17px] font-semibold text-[#1C1C1E]">捜索エリアを追加</h3>
-            <button onClick={onClose}><X className="w-6 h-6 text-slate-400"/></button>
-          </div>
-          <div className="space-y-5">
-            <div>
-              <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">場所・エリア名</label>
-              <div className="relative"><MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#73351F]"/>
-                <input autoFocus type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" value={name} onChange={e => setName(e.target.value)} placeholder="例: ○○公園、駅前商店街" onKeyDown={e => e.key === 'Enter' && name.trim() && handleSave()}/>
-              </div>
+    <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+      <div className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-lg flex flex-col max-h-[90vh] overflow-hidden">
+        {/* Header — matches AddSightingModal */}
+        <div className="px-5 pt-3 pb-4 border-b border-[#ECE2CE] flex justify-between items-center bg-[#E6D6B5] shrink-0">
+          <h3 className="font-bold text-[17px] text-[#1A2E2D]">捜索ポイントを追加</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-[#1A2E2D]/10 flex items-center justify-center"><X className="w-4 h-4 text-[#1A2E2D]"/></button>
+        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+          <div>
+            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">場所</label>
+            <div className="relative">
+              {isLoadingAddress
+                ? <div className="absolute left-3 top-3.5 w-4 h-4 border-2 border-[#22807F] border-t-transparent rounded-full animate-spin"/>
+                : <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-[#22807F]"/>
+              }
+              <input autoFocus type="text" className="w-full pl-9 pr-4 py-3 bg-[#F2F2F7] rounded-xl outline-none text-sm font-medium text-[#1C1C1E]" value={name} onChange={e => setName(e.target.value)} placeholder={isLoadingAddress ? '住所を取得中…' : '例: ○○公園、駅前商店街'}/>
             </div>
-            <div>
-              <label className="block text-[11px] font-semibold text-[#8E8E93] mb-1.5">メモ (任意)</label>
-              <textarea className="w-full p-3 bg-[#F2F2F7] rounded-xl h-20 outline-none text-sm font-medium resize-none text-[#1C1C1E]" value={note} onChange={e => setNote(e.target.value)} placeholder="捜索の注意点など"/>
-            </div>
-            <button onClick={handleSave} disabled={!name.trim() || isGeocoding} className="w-full bg-[#73351F] disabled:opacity-40 text-white py-4 rounded-2xl font-semibold text-base shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2">
-              {isGeocoding && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>}
-              {isGeocoding ? '場所を取得中…' : '追加する'}
-            </button>
           </div>
+          <div>
+            <label className="text-[11px] font-semibold text-[#8E8E93] mb-1.5 block">メモ (任意)</label>
+            <textarea className="w-full p-3 bg-[#F2F2F7] rounded-xl h-24 outline-none text-sm font-medium resize-none text-[#1C1C1E]" value={note} onChange={e => setNote(e.target.value)} placeholder="捜索の注意点など"/>
+          </div>
+        </div>
+        {/* Footer CTA */}
+        <div className="px-5 py-4 border-t border-[#ECE2CE] shrink-0">
+          <button onClick={() => { if (name.trim()) onSave({ name, note }); }} disabled={!name.trim()} className="w-full bg-[#D97757] disabled:opacity-40 text-white py-4 rounded-2xl font-bold shadow-sm active:scale-[0.98] transition-all">追加する</button>
         </div>
       </div>
     </div>
@@ -1311,11 +1308,12 @@ export default function App() {
   });
 
   // Map state
-  const [isMapMenuOpen, setIsMapMenuOpen]           = useState(false);
+  const [isMapMenuOpen, setIsMapMenuOpen]           = useState(false); // legacy — kept for compat
   const [isSightingOpen, setIsSightingOpen]         = useState(false);
   const [pendingAddress, setPendingAddress]         = useState('');
   const [pendingLatLng, setPendingLatLng]           = useState(null);
   const [isAddressLoading, setIsAddressLoading]     = useState(false);
+  const [mapTapMenu, setMapTapMenu]                 = useState(null); // { lat, lng } — shown on map tap
 
   // InfoWindow state for main map
   const [selectedSightingId, setSelectedSightingId] = useState(null);
@@ -1380,12 +1378,11 @@ export default function App() {
     ? sightings.reduce((a, b) => new Date(b.createdAt || 0) > new Date(a.createdAt || 0) ? b : a)
     : null;
 
-  const handleMapClick = async (latlng) => {
+  // Resolve address from latlng (shared helper)
+  const resolveAddress = async (latlng) => {
     setPendingLatLng(latlng);
     setPendingAddress(`${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`);
     setIsAddressLoading(true);
-    setIsSightingOpen(true);
-    setIsMapMenuOpen(false);
     setSelectedSightingId(null);
     try {
       const res = await fetch(
@@ -1395,22 +1392,33 @@ export default function App() {
       const json = await res.json();
       if (json?.display_name) {
         const a = json.address || {};
-        const parts = [
-          a.state,
-          a.city || a.town || a.village || a.county,
-          a.city_district || a.suburb || a.neighbourhood,
-          a.quarter,
-          a.road || a.pedestrian || a.footway,
-          a.house_number,
-          a.building || a.amenity,
-        ].filter(Boolean);
+        const parts = [a.state, a.city || a.town || a.village || a.county, a.city_district || a.suburb || a.neighbourhood, a.quarter, a.road || a.pedestrian || a.footway, a.house_number, a.building || a.amenity].filter(Boolean);
         setPendingAddress(parts.length ? parts.join('') : json.display_name);
       }
-    } catch {
-      // keep coords as fallback
-    } finally {
-      setIsAddressLoading(false);
-    }
+    } catch { /* keep coords */ } finally { setIsAddressLoading(false); }
+  };
+
+  const handleMapClick = (latlng) => {
+    setPendingLatLng(latlng);
+    setMapTapMenu(latlng);
+    setIsMapMenuOpen(false);
+    setSelectedSightingId(null);
+  };
+
+  // Choose "目撃情報を追加" from map tap menu
+  const handleMapTapSighting = () => {
+    if (!mapTapMenu) return;
+    resolveAddress(mapTapMenu);
+    setIsSightingOpen(true);
+    setMapTapMenu(null);
+  };
+
+  // Choose "捜索ポイントを追加" from map tap menu
+  const handleMapTapArea = () => {
+    if (!mapTapMenu) return;
+    resolveAddress(mapTapMenu);
+    setIsAddAreaOpen(true);
+    setMapTapMenu(null);
   };
 
   const handleSaveSighting = (form) => {
@@ -1640,8 +1648,17 @@ export default function App() {
                   </InfoWindow>
                 )}
 
-                {/* 目撃情報ピン（赤ティアドロップ・番号表示） */}
-                {sightings.map((s, i) => (
+                {/* Temporary pin for map tap */}
+                {mapTapMenu && (
+                  <Marker
+                    position={{ lat: mapTapMenu.lat, lng: mapTapMenu.lng }}
+                    icon={mkTapIcon()}
+                    zIndex={1000}
+                  />
+                )}
+
+                {/* 目撃情報ピン — sightingsタブ時のみ表示 */}
+                {mapSubTab === 'sightings' && sightings.map((s, i) => (
                   <Marker
                     key={s.id}
                     position={{ lat: s.lat, lng: s.lng }}
@@ -1649,7 +1666,7 @@ export default function App() {
                     onClick={() => { setSelectedSightingId(s.id); setIsLostInfoOpen(false); setTrackerAreaId(null); }}
                   />
                 ))}
-                {selectedSightingId !== null && (() => {
+                {mapSubTab === 'sightings' && selectedSightingId !== null && (() => {
                   const s = sightings.find(x => x.id === selectedSightingId);
                   const i = sightings.findIndex(x => x.id === selectedSightingId);
                   if (!s) return null;
@@ -1658,26 +1675,39 @@ export default function App() {
                       position={{ lat: s.lat, lng: s.lng }}
                       onCloseClick={() => setSelectedSightingId(null)}
                     >
-                      <div style={{ minWidth: 150, fontFamily: 'system-ui', textAlign: 'left' }}>
+                      <div style={{ minWidth: 160, fontFamily: 'system-ui', textAlign: 'left' }}>
                         <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>目撃情報 #{i + 1}</p>
                         {s.time    && <p style={{ fontSize: 11, color: '#64748B', marginBottom: 2 }}>🕐 {fmtDatetime(s.time)}</p>}
                         {s.address && <p style={{ fontSize: 11, color: '#475569', marginBottom: 4 }}>📍 {s.address}</p>}
                         {s.note    && <p style={{ fontSize: 11, color: '#94A3B8', fontStyle: 'italic', marginBottom: 4 }}>{s.note}</p>}
-                        <button
-                          onClick={() => { setSightings(p => p.filter(x => x.id !== s.id)); setSelectedSightingId(null); }}
-                          style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, width: '100%', textAlign: 'center', background: '#FEF2F2', padding: '4px 0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
-                        >削除</button>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button
+                            onClick={() => {
+                              const exists = areas.some(a => a.lat === s.lat && a.lng === s.lng);
+                              if (!exists) {
+                                setAreas(p => [...p, { id: Date.now(), name: s.address || `${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}`, note: '', status: '未着手', time: '今すぐ', lat: s.lat, lng: s.lng }]);
+                              }
+                              setSelectedSightingId(null);
+                              setMapSubTab('areas');
+                            }}
+                            style={{ fontSize: 11, color: '#406D1F', fontWeight: 700, flex: 1, textAlign: 'center', background: '#F0F7EC', padding: '5px 0', borderRadius: 6, border: '1px solid #406D1F40', cursor: 'pointer' }}
+                          >捜索ポイントに追加</button>
+                          <button
+                            onClick={() => { setSightings(p => p.filter(x => x.id !== s.id)); setSelectedSightingId(null); }}
+                            style={{ fontSize: 11, color: '#EF4444', fontWeight: 700, flex: 1, textAlign: 'center', background: '#FEF2F2', padding: '5px 0', borderRadius: 6, border: 'none', cursor: 'pointer' }}
+                          >削除</button>
+                        </div>
                       </div>
                     </InfoWindow>
                   );
                 })()}
 
-                {/* 捜索エリアピン（四角・ステータスカラー） */}
-                {areas.filter(a => a.lat && a.lng).map(area => (
+                {/* 捜索エリアピン — areasタブ時のみ表示 */}
+                {mapSubTab === 'areas' && areas.filter(a => a.lat && a.lng).map((area, idx) => (
                   <Marker
                     key={`area-${area.id}`}
                     position={{ lat: area.lat, lng: area.lng }}
-                    icon={mkAreaIcon(area.status)}
+                    icon={mkAreaIcon(area.status, idx + 1)}
                     onClick={() => { setTrackerAreaId(area.id); setSelectedSightingId(null); setIsLostInfoOpen(false); }}
                   />
                 ))}
@@ -1700,40 +1730,48 @@ export default function App() {
               </GoogleMap>
             )}
 
-            {/* FAB（目撃情報追加） */}
-            <div className="absolute right-4 flex flex-col items-end gap-3" style={{ zIndex: 10, bottom: sheetExpanded ? 'calc(50vh + 140px)' : '160px' , transition: 'bottom 0.3s ease' }}>
-              {isMapMenuOpen && (
-                <div className="bg-white rounded-2xl shadow-lg border border-[#ECE2CE] overflow-hidden mb-3" style={{ minWidth: '200px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
-                  {[
-                    { icon: Plus, label: '目撃情報を追加', action: () => { setIsSightingOpen(true); setIsMapMenuOpen(false); } },
-                    { icon: Crosshair, label: '捜索ポイントを追加', action: () => { setIsAddAreaOpen(true); setIsMapMenuOpen(false); } },
-                    { icon: Share2, label: '共有', action: () => {
-                      setIsMapMenuOpen(false);
-                      const lines = sightings.map(s =>
-                        `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
-                      );
-                      const text = lines.length > 0
-                        ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
-                        : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
-                      if (navigator.share) {
-                        navigator.share({ title: `${petData.name}の目撃情報`, text });
-                      } else {
-                        navigator.clipboard?.writeText(text);
-                        alert('目撃情報をコピーしました');
-                      }
-                    }},
-                  ].map(({ icon: Icon, label, action }, idx) => (
-                    <button key={label} onClick={action} className={`w-full px-5 py-3.5 flex items-center gap-3 text-[14px] font-medium text-[#1A2E2D] active:bg-[#E6D6B5]/40 transition-colors ${idx > 0 ? 'border-t border-[#ECE2CE]' : ''}`}>
-                      <Icon className="w-5 h-5 text-[#22807F] shrink-0"/>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#D97757] text-white'}`}>
-                {isMapMenuOpen ? <X className="w-8 h-8"/> : <Plus className="w-8 h-8"/>}
+            {/* FAB — Share button */}
+            <div className="absolute right-4" style={{ zIndex: 10, bottom: sheetExpanded ? 'calc(50vh + 140px)' : '160px', transition: 'bottom 0.3s ease' }}>
+              <button onClick={() => {
+                const lines = sightings.map(s =>
+                  `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
+                );
+                const text = lines.length > 0
+                  ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
+                  : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
+                if (navigator.share) {
+                  navigator.share({ title: `${petData.name}の目撃情報`, text });
+                } else {
+                  navigator.clipboard?.writeText(text);
+                  alert('共有リンクをコピーしました');
+                }
+              }} className="w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all bg-[#D97757] text-white">
+                <Share2 className="w-7 h-7"/>
               </button>
             </div>
+
+            {/* Map tap menu — choose sighting or search point */}
+            {mapTapMenu && (
+              <div className="fixed inset-0 z-[100]" onClick={() => setMapTapMenu(null)}>
+                <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-lg pb-6 pt-2 px-5" onClick={e => e.stopPropagation()} style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+                  <div className="w-9 h-1 bg-[#1A2E2D]/20 rounded-full mx-auto mb-4"/>
+                  <p className="text-[13px] text-[#8E8E93] font-medium mb-3">この地点に追加</p>
+                  <div className="flex gap-3">
+                    <button onClick={handleMapTapSighting} className="flex-1 py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
+                      <CircleAlert className="w-6 h-6 text-[#D97757]"/>
+                      <span className="text-[13px] font-semibold text-[#1A2E2D]">目撃情報</span>
+                    </button>
+                    <button onClick={handleMapTapArea} className="flex-1 py-4 rounded-2xl border-2 border-[#ECE2CE] flex flex-col items-center gap-2 active:scale-95 transition-all bg-white">
+                      <Crosshair className="w-6 h-6 text-[#22807F]"/>
+                      <span className="text-[13px] font-semibold text-[#1A2E2D]">捜索ポイント</span>
+                    </button>
+                  </div>
+                  <button onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }} className="w-full mt-3 py-3.5 rounded-2xl text-[15px] font-semibold text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
+                    キャンセル
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* ── Bottom Sheet + Nav ── */}
             <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 20 }}>
@@ -1815,7 +1853,7 @@ export default function App() {
                         </div>
                       ) : areas.map((area, idx) => (
                         <div key={area.id} onClick={() => { setSelectedArea(area); setIsTrackerMenuOpen(true); }} className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${idx > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}>
-                          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold" style={{background: AREA_STATUS_STYLE[area.status]?.bg || '#94A3B8'}}>{AREA_STATUS_STYLE[area.status]?.symbol || '–'}</div>
+                          <span className="bg-[#406D1F] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shrink-0">{idx + 1}</span>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight">{area.name}</p>
                             <div className="flex items-center gap-2 mt-0.5">
@@ -1940,7 +1978,7 @@ export default function App() {
         </div>
       )}
       <AddSightingModal isOpen={isSightingOpen} onClose={() => setIsSightingOpen(false)} onSave={handleSaveSighting} initialAddress={pendingAddress} isLoadingAddress={isAddressLoading}/>
-      <AddAreaModal     isOpen={isAddAreaOpen} onClose={() => setIsAddAreaOpen(false)} onSave={({ name, note, lat, lng }) => { setAreas(p => [...p, { id: Date.now(), name, note, status: '未着手', time: '今すぐ', lat, lng }]); setIsAddAreaOpen(false); }}/>
+      <AddAreaModal     isOpen={isAddAreaOpen} onClose={() => setIsAddAreaOpen(false)} initialAddress={pendingAddress} isLoadingAddress={isAddressLoading} onSave={({ name, note }) => { setAreas(p => [...p, { id: Date.now(), name, note, status: '未着手', time: '今すぐ', lat: pendingLatLng?.lat ?? null, lng: pendingLatLng?.lng ?? null }]); setIsAddAreaOpen(false); setPendingLatLng(null); }}/>
 
       {/* Tracker area bottom sheet */}
       {isTrackerMenuOpen && (
