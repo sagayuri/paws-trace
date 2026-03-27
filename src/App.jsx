@@ -1735,16 +1735,19 @@ export default function App() {
             <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 20 }}>
               {/* Bottom Sheet */}
               <div className="shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ background: '#EEE1C6', borderRadius: '24px 24px 0 0', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
-                {/* Sheet handle — h:56px, padding:16px */}
+                {/* Handle bar + title — tap to expand/collapse */}
                 <button
                   onClick={() => setSheetExpanded(v => !v)}
-                  className="w-full flex items-center justify-between active:opacity-80 transition-opacity"
-                  style={{ height: '56px', padding: '0 16px' }}
+                  className="w-full flex flex-col items-center active:opacity-80 transition-opacity"
+                  style={{ padding: '10px 16px 0 16px' }}
                 >
-                  <span className="font-bold text-[#1A2E2D]" style={{ fontSize: '16px', lineHeight: '20.8px', letterSpacing: '0.32px' }}>
-                    {mapSubTab === 'sightings' ? '目撃情報' : '捜索ポイント'}
-                  </span>
-                  <div className="flex items-center gap-2">
+                  {/* Drag handle */}
+                  <div className="w-9 h-1 bg-[#1A2E2D]/20 rounded-full mb-3"/>
+                  {/* Title row */}
+                  <div className="w-full flex items-center justify-between" style={{ height: '36px' }}>
+                    <span className="font-bold text-[#1A2E2D]" style={{ fontSize: '16px', lineHeight: '20.8px', letterSpacing: '0.32px' }}>
+                      {mapSubTab === 'sightings' ? '目撃情報' : '捜索ポイント'}
+                    </span>
                     <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">
                       {mapSubTab === 'sightings' ? sightings.length : areas.length}
                     </span>
@@ -1770,7 +1773,7 @@ export default function App() {
                           onClick={() => { setSelectedSightingId(s.id); setSheetExpanded(false); }}
                           className={`flex items-center gap-3 px-5 py-3.5 active:bg-[#F2F2F7] cursor-pointer transition-colors ${i > 0 ? 'border-t border-[#ECE2CE]/60' : ''}`}
                         >
-                          <div className="w-8 h-8 bg-[#D97757] rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold">{i + 1}</div>
+                          <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center shrink-0">{i + 1}</span>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-[#1A2E2D] text-[15px] leading-tight truncate">{s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}</p>
                             <div className="flex items-center gap-2 mt-0.5">
@@ -1778,7 +1781,7 @@ export default function App() {
                               {s.note && <span className="text-[12px] text-[#8E8E93] truncate">— {s.note}</span>}
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[#C6C6C8] shrink-0"/>
+                          <ChevronRight className="w-4 h-4 text-[#1A2E2D] shrink-0"/>
                         </div>
                       ))
                     )
@@ -1814,7 +1817,7 @@ export default function App() {
                               <span className="text-[11px] text-[#8E8E93]">{area.time}</span>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-[#C6C6C8] shrink-0"/>
+                          <ChevronRight className="w-4 h-4 text-[#1A2E2D] shrink-0"/>
                         </div>
                       ))}
                       <button onClick={() => setIsAddAreaOpen(true)} className="mx-5 my-3 bg-white text-[#73351F] py-3 rounded-2xl font-semibold flex items-center justify-center gap-2 border border-[#73351F]/30 active:scale-95 transition-all w-[calc(100%-40px)]">
@@ -1822,6 +1825,12 @@ export default function App() {
                       </button>
                     </>
                   )}
+                  {/* ── 捜索を終了する ── */}
+                  <div className="px-5 py-4">
+                    <button onClick={() => setShowEndConfirm(true)} className="w-full py-3.5 rounded-2xl font-semibold text-[15px] text-[#22807F] border-2 border-[#22807F]/40 bg-transparent active:scale-[0.98] transition-all">
+                      捜索を終了する
+                    </button>
+                  </div>
                 </div>
               </div>
 
