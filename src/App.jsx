@@ -1548,10 +1548,11 @@ export default function App() {
 
       {/* ══ HEADER ═══════════════════════════════════════════════════════════ */}
       <header
-        className="bg-[#E6D6B5] flex items-center justify-between shrink-0"
+        className="bg-[#E6D6B5] flex items-center justify-between shrink-0 overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          height: '68px',
-          maxHeight: '68px',
+          height: activeTab === 'info' ? '0px' : '68px',
+          maxHeight: activeTab === 'info' ? '0px' : '68px',
+          opacity: activeTab === 'info' ? 0 : 1,
           paddingLeft: '23.5px',
           paddingRight: '23.5px',
           fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif',
@@ -1578,9 +1579,11 @@ export default function App() {
       {/* ══ CONTENT ══════════════════════════════════════════════════════════ */}
       <div className="flex-1 relative overflow-hidden">
 
-        {/* INFO SCREEN (迷子情報画面) ────────────────────────────────────── */}
-        {activeTab === 'info' && (
-          <div className="h-full flex flex-col overflow-y-auto bg-[#F2F2F7]">
+        {/* INFO SCREEN (迷子情報画面) — overlay that slides in/out ─────── */}
+        <div
+          className="absolute inset-0 z-30 flex flex-col overflow-y-auto bg-[#F2F2F7] transition-transform duration-300 ease-in-out"
+          style={{ transform: activeTab === 'info' ? 'translateX(0)' : 'translateX(100%)' }}
+        >
             {/* Sub-header with back */}
             <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-[#C6C6C8]/40 shrink-0" style={{ fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
               <button onClick={() => setActiveTab('map')} className="w-9 h-9 flex items-center justify-center rounded-full active:bg-[#F2F2F7] transition-colors">
@@ -1622,10 +1625,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
 
         {/* UNIFIED MAP SCREEN ─────────────────────────────────────────────── */}
-        {activeTab === 'map' && (
           <div className="h-full relative">
             {!isLoaded ? <MapLoading/> : (
               <GoogleMap
@@ -1741,27 +1742,6 @@ export default function App() {
               </GoogleMap>
             )}
 
-            {/* FAB — Share button */}
-            <div className="absolute right-4" style={{ zIndex: 10, bottom: sheetExpanded ? 'calc(50vh + 140px)' : '160px', transition: 'bottom 0.3s ease' }}>
-              <button onClick={() => {
-                const lines = sightings.map(s =>
-                  `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
-                );
-                const text = lines.length > 0
-                  ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
-                  : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
-                if (navigator.share) {
-                  navigator.share({ title: `${petData.name}の目撃情報`, text });
-                } else {
-                  navigator.clipboard?.writeText(text);
-                  alert('共有リンクをコピーしました');
-                }
-              }} className="w-14 h-14 rounded-[4px] shadow-lg flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all bg-[#D97757] text-white">
-                <Share2 className="w-6 h-6"/>
-                <span className="text-[10px] font-bold leading-none">共有</span>
-              </button>
-            </div>
-
             {/* Map tap menu — modal overlay */}
             {mapTapMenu && (
               <div className="fixed inset-0 z-[200] flex items-center justify-center" onClick={() => { setMapTapMenu(null); setPendingLatLng(null); }}>
@@ -1794,6 +1774,26 @@ export default function App() {
 
             {/* ── Bottom Sheet + Nav ── */}
             <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 20 }}>
+              {/* FAB — Share button, 8px above sheet top */}
+              <div className="absolute right-4 -top-[64px]">
+                <button onClick={() => {
+                  const lines = sightings.map(s =>
+                    `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
+                  );
+                  const text = lines.length > 0
+                    ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
+                    : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
+                  if (navigator.share) {
+                    navigator.share({ title: `${petData.name}の目撃情報`, text });
+                  } else {
+                    navigator.clipboard?.writeText(text);
+                    alert('共有リンクをコピーしました');
+                  }
+                }} className="w-14 h-14 rounded-[4px] shadow-lg flex flex-col items-center justify-center gap-0.5 active:scale-95 transition-all bg-[#D97757] text-white">
+                  <Share2 className="w-6 h-6"/>
+                  <span className="text-[10px] font-bold leading-none">共有</span>
+                </button>
+              </div>
               {/* Bottom Sheet */}
               <div className="shadow-[0_-4px_20px_rgba(0,0,0,0.08)]" style={{ background: '#EEE1C6', borderRadius: '24px 24px 0 0', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
                 {/* Handle bar + title — tap to expand/collapse */}
@@ -2013,7 +2013,6 @@ export default function App() {
               </nav>
             </div>
           </div>
-        )}
 
 
       </div>
