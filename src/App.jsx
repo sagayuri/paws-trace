@@ -1703,27 +1703,31 @@ export default function App() {
             {/* FAB（目撃情報追加） */}
             <div className="absolute right-4 flex flex-col items-end gap-3" style={{ zIndex: 10, bottom: sheetExpanded ? 'calc(50vh + 140px)' : '160px' , transition: 'bottom 0.3s ease' }}>
               {isMapMenuOpen && (
-                <div className="flex flex-col items-end gap-3 mb-2">
-                  <button onClick={() => { setIsSightingOpen(true); setIsMapMenuOpen(false); }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
-                    <Plus className="w-5 h-5 text-[#73351F]"/> 目撃情報を追加
-                  </button>
-                  <button onClick={() => {
-                    setIsMapMenuOpen(false);
-                    const lines = sightings.map(s =>
-                      `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
-                    );
-                    const text = lines.length > 0
-                      ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
-                      : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
-                    if (navigator.share) {
-                      navigator.share({ title: `${petData.name}の目撃情報`, text });
-                    } else {
-                      navigator.clipboard?.writeText(text);
-                      alert('目撃情報をコピーしました');
-                    }
-                  }} className="bg-white px-5 py-3 rounded-2xl shadow-md border border-[#C6C6C8]/40 flex items-center gap-3 font-medium text-sm text-[#1C1C1E] active:scale-95 transition-all">
-                    <Share2 className="w-5 h-5 text-[#73351F]"/> 目撃情報を共有
-                  </button>
+                <div className="bg-white rounded-2xl shadow-lg border border-[#ECE2CE] overflow-hidden mb-3" style={{ minWidth: '200px', fontFamily: '"LINE Seed JP App_OTF", "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif' }}>
+                  {[
+                    { icon: Plus, label: '目撃情報を追加', action: () => { setIsSightingOpen(true); setIsMapMenuOpen(false); } },
+                    { icon: Crosshair, label: '捜索ポイントを追加', action: () => { setIsAddAreaOpen(true); setIsMapMenuOpen(false); } },
+                    { icon: Share2, label: '共有', action: () => {
+                      setIsMapMenuOpen(false);
+                      const lines = sightings.map(s =>
+                        `${fmtDatetime(s.time || s.createdAt)} / ${s.address || `${s.lat?.toFixed(4)}, ${s.lng?.toFixed(4)}`}${s.note ? ' — ' + s.note : ''}`
+                      );
+                      const text = lines.length > 0
+                        ? `【${petData.name}の目撃情報】\n` + lines.join('\n')
+                        : `【${petData.name}の目撃情報】\nまだ目撃情報はありません`;
+                      if (navigator.share) {
+                        navigator.share({ title: `${petData.name}の目撃情報`, text });
+                      } else {
+                        navigator.clipboard?.writeText(text);
+                        alert('目撃情報をコピーしました');
+                      }
+                    }},
+                  ].map(({ icon: Icon, label, action }, idx) => (
+                    <button key={label} onClick={action} className={`w-full px-5 py-3.5 flex items-center gap-3 text-[14px] font-medium text-[#1A2E2D] active:bg-[#E6D6B5]/40 transition-colors ${idx > 0 ? 'border-t border-[#ECE2CE]' : ''}`}>
+                      <Icon className="w-5 h-5 text-[#22807F] shrink-0"/>
+                      {label}
+                    </button>
+                  ))}
                 </div>
               )}
               <button onClick={() => setIsMapMenuOpen(v => !v)} className={`w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center active:scale-95 transition-all ${isMapMenuOpen ? 'bg-[#1C1C1E] text-white' : 'bg-[#D97757] text-white'}`}>
@@ -1748,9 +1752,11 @@ export default function App() {
                     <span className="font-bold text-[#1A2E2D]" style={{ fontSize: '16px', lineHeight: '20.8px', letterSpacing: '0.32px' }}>
                       {mapSubTab === 'sightings' ? '目撃情報' : '捜索ポイント'}
                     </span>
-                    <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">
-                      {mapSubTab === 'sightings' ? sightings.length : areas.length}
-                    </span>
+                    {!sheetExpanded && (
+                      <span className="bg-[#D97757] text-white text-[12px] font-bold min-w-[24px] h-6 px-1.5 rounded-full flex items-center justify-center">
+                        {mapSubTab === 'sightings' ? sightings.length : areas.length}
+                      </span>
+                    )}
                   </div>
                 </button>
 
